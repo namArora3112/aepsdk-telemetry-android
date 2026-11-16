@@ -9,8 +9,8 @@ import org.json.JSONObject
  */
 data class TelemetryConfig(
     val enabled: Boolean = false,              // safe default: OFF when policy unknown
-    val endpoint: String = "",                 // collector URL; empty = capture-only POC mode
-    val maxQueueSize: Int = 256,               // bounded queue (POC-proven size)
+    val endpoint: String = "",                 // collector URL; empty = capture-only mode
+    val maxQueueSize: Int = 256,               // bounded queue (validated size)
     val maxBatchBytes: Int = 32 * 1024,        // size-based sealing threshold
     val dedupeWindowMs: Long = 5000,           // Omega-style duplicate suppression window
     val flushIntervalMs: Long = 60_000

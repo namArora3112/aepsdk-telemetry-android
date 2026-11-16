@@ -4,10 +4,10 @@ pluginManagement {
 dependencyResolutionManagement {
     repositories { google(); mavenCentral(); maven("https://maven.adobe.com/nexus/content/repositories/public/") }
 }
-rootProject.name = "telemetry-poc"
+rootProject.name = "telemetry"
 include(":telemetry", ":testapp")
 
-// POC artifacts stay local to this composite; no shared Maven-local overwrite is required.
+// Artifacts stay local to this composite; no shared Maven-local overwrite is required.
 providers.gradleProperty("telemetryCorePath").orNull?.let { path ->
     includeBuild(path) {
         name = "typed-core"

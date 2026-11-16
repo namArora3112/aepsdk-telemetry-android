@@ -10,7 +10,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 1
-        versionName = "0.1.0-poc"
+        versionName = "1.0.0-alpha01"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     flavorDimensions += "capture"
@@ -32,9 +32,9 @@ android {
 }
 dependencies {
     implementation(project(":telemetry"))
-    implementation("com.adobe.marketing.mobile:core:3.11.0-telemetry-typed-poc")
-    implementation("com.adobe.marketing.mobile:campaignclassic:3.1.4-telemetry-typed-poc")
-    "withEdgeImplementation"("com.adobe.marketing.mobile:edge:3.0.0-telemetry-typed-poc")
+    implementation("com.adobe.marketing.mobile:core:3.11.0-telemetry-typed")
+    implementation("com.adobe.marketing.mobile:campaignclassic:3.1.4-telemetry-typed")
+    "withEdgeImplementation"("com.adobe.marketing.mobile:edge:3.0.0-telemetry-typed")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("androidx.test:core:1.6.1")

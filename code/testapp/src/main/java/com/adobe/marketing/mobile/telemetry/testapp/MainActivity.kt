@@ -24,7 +24,7 @@ class MainActivity : Activity() {
 
         button("Telemetry via EventHub (projection)") {
             // The central typed observer captures this existing business event.
-            MobileCore.trackAction("poc_action_hub", null)
+            MobileCore.trackAction("demo_action_hub", null)
         }
         button("Telemetry via exposed functions (direct hook)") {
             CampaignClassic.registerDevice("", null, null) // rejected before hub dispatch
@@ -35,9 +35,9 @@ class MainActivity : Activity() {
         }
         button("Flush queue (public API)") { Telemetry.flushQueue() }
         button("Example local operation (not a Messaging API)") {
-            val op = Telemetry.operationStarted("poc.example", "sdk.example.localWork")
+            val op = Telemetry.operationStarted("demo.example", "sdk.example.localWork")
             output.postDelayed({
-                Telemetry.operationCompleted(op, "poc.example", "sdk.example.localWork",
+                Telemetry.operationCompleted(op, "demo.example", "sdk.example.localWork",
                     outcome = "success", outcomeMeaning = "local example completed")
             }, 350)
         }
@@ -59,7 +59,7 @@ class MainActivity : Activity() {
 
     private fun render() {
         output.text = buildString {
-            appendLine("== Telemetry POC ==")
+            appendLine("== Telemetry Demo ==")
             Telemetry.stats().forEach { (k, v) -> appendLine("$k: $v") }
         }
     }

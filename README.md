@@ -1,13 +1,15 @@
-# aepsdk-telemetry-android (POC)
+# aepsdk-telemetry-android
 
-Proof of concept for the standalone **Telemetry plugin for Mobile Core** (see the design wiki,
-page 4128573161, Questions 1–6). Branch: `poc/telemetry-eventhub-typed`.
+Standalone **Telemetry plugin for Mobile Core** (see the design wiki,
+page 4128573161, Questions 1–6, and the Technical Design Review, page 4128577168).
+Branch: `feat/telemetry-eventhub-typed` (production review). The exploratory
+history is on `poc/telemetry-eventhub-typed`.
 
-This branch requires the matching `poc/telemetry-eventhub-typed` Core, Edge and
+This branch requires the matching `feat/telemetry-eventhub-typed` Core, Edge and
 Campaign Classic branches from the `namArora3112` forks. They are composed from
-source below; the typed POC coordinates are not public Maven releases.
+source below; the typed coordinates are not public Maven releases.
 
-## What this POC demonstrates
+## What this implementation demonstrates
 
 | Design decision | Where in code |
 |---|---|
@@ -66,7 +68,7 @@ capture-only mode; set an endpoint to exercise the uploader).
 
 For the interactive host use the same path properties with
 `:testapp:installWithEdgeDebug` or `:testapp:installNoEdgeDebug`. The hosts have
-separate application IDs so they do not overwrite the original POC app.
+separate application IDs so the two host flavors can be installed side by side.
 
 The integration tests call real APIs, including valid hub-dispatch and invalid
 direct-hook paths, catalog/XDM matching, opt-out, stale callbacks, and customer
@@ -79,7 +81,7 @@ Release hosts enable R8. Use the same path properties with
 and typed linkage. Kotlin 1.9.22 and AGP 8.2.0 match the SDK composite's Android
 toolchain; the older shrinker cannot safely process Kotlin 2.2 metadata.
 
-## POC limits
+## Current limits
 
 Installation is explicit; automatic Core discovery/bootstrap is not implemented.
 Pending records persist in a bounded SQLite outbox (`SqliteOutbox`) and survive
