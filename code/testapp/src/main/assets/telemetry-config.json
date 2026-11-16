@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "endpoint": "",
+  "maxQueueSize": 256,
+  "maxBatchBytes": 1024,
+  "dedupeWindowMs": 5000,
+  "flushIntervalMs": 60000
+}
