@@ -47,7 +47,7 @@ data class TelemetryBatch(
     fun toJson(): JSONObject = JSONObject().apply {
         put("schemaVersion", 3); put("catalogVersion", 1)
         put("batchId", batchId)
-        put("createdAt", java.time.Instant.ofEpochMilli(createdAtMs).toString())
+        put("createdAt", java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).apply { timeZone = java.util.TimeZone.getTimeZone("UTC") }.format(java.util.Date(createdAtMs)))
         put("product", "aep-mobile-sdk"); put("environment", "stage")
         put("context", JSONObject().apply {
             put("installationId", installationId); put("platform", "android")
