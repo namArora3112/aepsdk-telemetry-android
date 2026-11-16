@@ -49,6 +49,16 @@ internal class TelemetryRecorder(
         }
     }
 
+    /** Dry-run probe: identical gating to record() (policy, validity, dedupe window) without mutating state. */
+    fun wouldAccept(record: TelemetryRecord): Boolean {
+        val config = configProvider()
+        if (!config.enabled || !record.isMeaningful()) return false
+        synchronized(lock) {
+            val last = recentKeys[record.dedupeKey()] ?: return true
+            return clock.nowMs() - last >= config.dedupeWindowMs
+        }
+    }
+
     fun pending(): List<TelemetryRecord> = outbox.pending()
 
     fun pendingBytes(): Int = outbox.pendingBytes()

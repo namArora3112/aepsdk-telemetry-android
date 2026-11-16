@@ -99,6 +99,24 @@ class TelemetryRecorderTest {
     }
 
     @Test
+    fun dryRunMatchesRecordGatingWithoutMutatingState() {
+        var now = 100L
+        var config = TelemetryConfig(enabled = true)
+        val recorder = TelemetryRecorder(Clock { now }, configProvider = { config })
+        val r = record(requestId = "probe")
+        assertTrue(recorder.wouldAccept(r))
+        assertTrue(recorder.record(r))
+        assertFalse("within dedupe window", recorder.wouldAccept(r))
+        now += 5000
+        assertTrue("after dedupe window", recorder.wouldAccept(r))
+        assertEquals(1, recorder.pending().size)
+        config = config.copy(enabled = false)
+        assertFalse("disabled policy", recorder.wouldAccept(r))
+        assertFalse(recorder.wouldAccept(record().copy(producer = "")))
+        assertEquals(1, recorder.pending().size)
+    }
+
+    @Test
     fun uncorrelatedDirectEventsRetainWindowDedupe() {
         var now = 100L
         val recorder = TelemetryRecorder(Clock { now }, configProvider = { TelemetryConfig(enabled = true) })

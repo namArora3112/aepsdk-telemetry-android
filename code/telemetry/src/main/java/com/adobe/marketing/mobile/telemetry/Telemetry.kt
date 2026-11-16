@@ -68,11 +68,11 @@ object Telemetry {
         }
     }
 
-    /** Test seam (Omega testSend parity): same gating as record(), without persisting. */
+    /** Test seam (Omega testSend parity): same gating as record() — policy, validity, dedupe window — without persisting. */
     @JvmStatic
     fun dryRun(record: TelemetryRecord): Boolean {
         val r = recorder ?: return false
-        return r.copyForDryRun(record)
+        return r.wouldAccept(record)
     }
 
     /** Direct-hook API for SDKs (Q6 Part 3). No-op when not installed or disabled. */
@@ -224,15 +224,4 @@ object Telemetry {
             }
         }
     }
-}
-
-/** Dry-run needs gating parity without mutating the queue — implemented on the recorder. */
-private fun com.adobe.marketing.mobile.telemetry.internal.TelemetryRecorder.copyForDryRun(record: TelemetryRecord): Boolean {
-    // Run the same checks record() performs, against a snapshot, without mutation.
-    val probe = TelemetryRecord(record.recordId, record.timestamp, record.producer, record.eventName,
-        record.phase, record.capture, record.operationId, record.requestId, record.outcome,
-        record.outcomeMeaning, record.durationMs)
-    if (!probe.isMeaningful()) return false
-    // Dedup + capacity checks are stateful; for the POC dry-run we report policy+validity only.
-    return true
 }
