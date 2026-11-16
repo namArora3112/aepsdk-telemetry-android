@@ -16,7 +16,7 @@ internal class TelemetryRecorder(
     private val configProvider: () -> TelemetryConfig
 ) {
     private val queue = ArrayDeque<TelemetryRecord>()
-    private val recentKeys = HashMap<String, Long>() // dedupeKey -> lastAcceptedMs
+    private val recentKeys = LinkedHashMap<String, Long>() // bounded duplicate history
     private val lock = Any()
 
     @Volatile var droppedCount: Int = 0; private set
@@ -30,10 +30,14 @@ internal class TelemetryRecorder(
 
         synchronized(lock) {
             val now = clock.nowMs()
+            recentKeys.entries.removeAll { now - it.value >= config.dedupeWindowMs }
             val key = record.dedupeKey()
             val last = recentKeys[key]
             if (last != null && now - last < config.dedupeWindowMs) return false // duplicate suppression
             recentKeys[key] = now
+            while (recentKeys.size > config.maxQueueSize.coerceAtLeast(1)) {
+                recentKeys.remove(recentKeys.keys.first())
+            }
 
             if (queue.size >= config.maxQueueSize) {
                 queue.pollFirst()                         // evict oldest; drop is counted, not hidden
@@ -60,7 +64,11 @@ internal class TelemetryRecorder(
     }
 
     fun requeue(records: List<TelemetryRecord>) = synchronized(lock) {
-        records.asReversed().forEach { queue.addFirst(it) }
+        val config = configProvider()
+        if (!config.enabled) return@synchronized
+        records.asReversed().forEach {
+            if (queue.size < config.maxQueueSize) queue.addFirst(it) else droppedCount++
+        }
         Unit
     }
 

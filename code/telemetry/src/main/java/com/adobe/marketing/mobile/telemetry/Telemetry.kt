@@ -5,7 +5,9 @@ import com.adobe.marketing.mobile.telemetry.internal.TelemetryRecorder
 import com.adobe.marketing.mobile.telemetry.internal.TelemetryStore
 import com.adobe.marketing.mobile.telemetry.internal.TelemetryUploader
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
+import com.adobe.marketing.mobile.MobileCore
+import com.adobe.marketing.mobile.plugin.TelemetryEventMapping
+import com.adobe.marketing.mobile.telemetrybridge.TelemetryBridge
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -31,7 +33,10 @@ object Telemetry {
     private var config: TelemetryConfig = TelemetryConfig()
     private var clock: Clock = Clock { System.currentTimeMillis() }
     private var ids: IdGenerator = IdGenerator { UUID.randomUUID().toString() }
-    private val operations = ConcurrentHashMap<String, Long>() // operationId -> startMs
+    private val plugin = TelemetryPlugin()
+    private var mappings = TelemetryPlugin.catalog()
+    private var policyGeneration = 0L
+    private var coreGeneration = 0L
     private val executor = Executors.newSingleThreadScheduledExecutor { r ->
         Thread(r, "aep-telemetry").apply { isDaemon = true }
     }
@@ -50,6 +55,8 @@ object Telemetry {
             store = TelemetryStore(application, ids)
             recorder = TelemetryRecorder(clock) { config }
             uploader = TelemetryUploader(application, store!!, ids, clock)
+            MobileCore.addPlugins(plugin)
+            publishPolicy()
         }
         recordInternal("com.adobe.module.core", "sdk.telemetry.install", "event", "directHook",
             outcome = if (config.enabled) "success" else "ignored",
@@ -74,20 +81,14 @@ object Telemetry {
 
     /** Start an instrumented operation; returns operationId for correlation. */
     @JvmStatic
-    fun operationStarted(producer: String, eventName: String, capture: String = "directHook"): String {
-        val opId = ids.newId()
-        operations[opId] = clock.nowMs()
-        recordInternal(producer, eventName, "started", capture, operationId = opId)
-        return opId
+    fun operationStarted(producer: String, eventName: String, capture: String = "directHook"): String? {
+        return TelemetryBridge.operationStarted(producer, eventName)
     }
 
     @JvmStatic
-    fun operationCompleted(operationId: String, producer: String, eventName: String,
+    fun operationCompleted(operationId: String?, producer: String, eventName: String,
                            outcome: String, outcomeMeaning: String? = null, capture: String = "directHook") {
-        val start = operations.remove(operationId)
-        recordInternal(producer, eventName, "completed", capture,
-            operationId = operationId, outcome = outcome, outcomeMeaning = outcomeMeaning,
-            durationMs = start?.let { clock.nowMs() - it })
+        TelemetryBridge.operationCompleted(operationId, producer, eventName, outcome, outcomeMeaning ?: "")
     }
 
     /** Hub projection entry (read-only observation of already-dispatched hub events). */
@@ -110,15 +111,34 @@ object Telemetry {
     @JvmStatic
     fun pendingCount(): Int = recorder?.pending()?.size ?: 0
 
+    /** Read-only diagnostics containing only the allowlisted telemetry schema. */
+    @JvmStatic
+    fun pendingRecords(): List<TelemetryRecord> = recorder?.pending() ?: emptyList()
+
+    @JvmStatic
+    fun eventMappings(): List<TelemetryEventMapping> = synchronized(lock) { mappings.toList() }
+
+    /** Replaces the reviewed catalog atomically; does not add hub listeners. */
+    @JvmStatic
+    fun setEventMappings(catalog: List<TelemetryEventMapping>) {
+        synchronized(lock) {
+            val next = catalog.toList()
+            publishPolicy(next)
+            mappings = next
+        }
+    }
+
     /**
-     * EventHub projection mode (Q6 Part 3): registers a read-only hub listener for the given
-     * event type/source and maps matching events into the recorder. Selector-scoped, never wildcard.
-     * Call AFTER Core is initialized (listener registration is async on the hub executor).
+     * Compatibility helper: replaces this type/source group's catalog entries.
+     * Does not register a second EventHub listener. Safe before Core initialization.
      */
     @JvmStatic
     fun registerEventHubProjection(eventType: String, eventSource: String, producer: String, telemetryEventName: String) {
-        com.adobe.marketing.mobile.MobileCore.registerEventListener(eventType, eventSource) { event ->
-            hubObserved(producer, telemetryEventName, requestId = event.uniqueIdentifier)
+        synchronized(lock) {
+            val next = mappings.filterNot { it.eventType == eventType && it.eventSource == eventSource } +
+                TelemetryEventMapping(eventType, eventSource, producer, telemetryEventName)
+            publishPolicy(next)
+            mappings = next
         }
     }
 
@@ -126,6 +146,7 @@ object Telemetry {
     fun stats(): Map<String, Any?> = mapOf(
         "installed" to installed,
         "enabled" to config.enabled,
+        "captureGeneration" to coreGeneration,
         "endpoint" to config.endpoint.ifBlank { "(capture-only)" },
         "lastUpload" to (uploader?.lastUploadStatus ?: "never")
     ) + (recorder?.stats() ?: emptyMap())
@@ -136,6 +157,8 @@ object Telemetry {
         synchronized(lock) {
             val wasEnabled = config.enabled
             config = newConfig
+            policyGeneration++
+            publishPolicy()
             if (wasEnabled && !newConfig.enabled) recorder?.purge()
         }
     }
@@ -146,26 +169,60 @@ object Telemetry {
         if (!installed) { this.clock = clock; this.ids = ids }
     }
 
+    private fun publishPolicy(catalog: List<TelemetryEventMapping> = mappings) {
+        try {
+            coreGeneration = TelemetryBridge.configure(plugin, installed && config.enabled, catalog)
+        } catch (e: IllegalArgumentException) {
+            config = config.copy(enabled = false)
+            policyGeneration++
+            recorder?.purge()
+            coreGeneration = TelemetryBridge.configure(plugin, false, emptyList())
+            throw e
+        }
+    }
+
     private fun recordInternal(producer: String, eventName: String, phase: String, capture: String,
                                operationId: String? = null, requestId: String? = null,
                                outcome: String? = null, outcomeMeaning: String? = null,
-                               durationMs: Long? = null) {
-        val r = recorder ?: return
-        r.record(TelemetryRecord(ids.newId(), clock.nowMs(), producer, eventName, phase, capture,
-            operationId, requestId, outcome, outcomeMeaning, durationMs))
+                               durationMs: Long? = null, timestamp: Long? = null) {
+        synchronized(lock) {
+            val r = recorder ?: return
+            if (!config.enabled) return
+            r.record(TelemetryRecord(ids.newId(), timestamp ?: clock.nowMs(), producer, eventName, phase, capture,
+                operationId, requestId, outcome, outcomeMeaning, durationMs))
+        }
+    }
+
+    internal fun recordFromCore(
+        producer: String, eventName: String, phase: String, capture: String,
+        operationId: String? = null, requestId: String? = null, outcome: String? = null,
+        meaning: String? = null, durationMs: Long? = null, timestamp: Long? = null,
+        generation: Long
+    ) {
+        synchronized(lock) {
+            if (generation != coreGeneration) return
+            recordInternal(producer, eventName, phase, capture, operationId, requestId,
+                outcome, meaning, durationMs, timestamp)
+        }
     }
 
     private fun maybeFlush(force: Boolean = false) {
-        val r = recorder ?: return
-        val u = uploader ?: return
-        if (!config.enabled || config.endpoint.isBlank()) return
-        if (!force && !r.shouldFlush()) return
-        val records = r.drain()
-        if (records.isEmpty()) return
-        val batch = u.buildBatch(records)
-        u.upload(batch, config) { success, retryable ->
-            if (!success && retryable) r.requeue(records)
-            // permanent failure: dropped with bounded diagnostic (lastUploadStatus)
+        synchronized(lock) {
+            val r = recorder ?: return
+            val u = uploader ?: return
+            if (!config.enabled || config.endpoint.isBlank()) return
+            if (!force && !r.shouldFlush()) return
+            val records = r.drain()
+            if (records.isEmpty()) return
+            val generation = policyGeneration
+            val batch = u.buildBatch(records)
+            u.upload(batch, config) { success, retryable ->
+                synchronized(lock) {
+                    if (!success && retryable && config.enabled && policyGeneration == generation) {
+                        r.requeue(records)
+                    }
+                }
+            }
         }
     }
 }

@@ -7,6 +7,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import com.adobe.marketing.mobile.MobileCore
+import com.adobe.marketing.mobile.CampaignClassic
 import com.adobe.marketing.mobile.telemetry.Telemetry
 
 class MainActivity : Activity() {
@@ -22,18 +23,22 @@ class MainActivity : Activity() {
         }
 
         button("Telemetry via EventHub (projection)") {
-            // business call dispatches a hub event; the projection listener maps it (no direct call here)
+            // The central typed observer captures this existing business event.
             MobileCore.trackAction("poc_action_hub", null)
         }
         button("Telemetry via exposed functions (direct hook)") {
-            Telemetry.event("com.adobe.module.core", "sdk.core.trackAction") // direct hook record
+            CampaignClassic.registerDevice("", null, null) // rejected before hub dispatch
+        }
+        button("Real Edge.sendEvent (with-Edge flavor)") { EdgeScenario.sendValid() }
+        button("Real Campaign receive via EventHub") {
+            CampaignClassic.trackNotificationReceive(mapOf("_dId" to "test-delivery", "_mId" to "test-message"))
         }
         button("Flush queue (public API)") { Telemetry.flushQueue() }
-        button("Simulate Messaging refresh (operationId lifecycle)") {
-            val op = Telemetry.operationStarted("com.adobe.messaging", "sdk.messaging.refresh")
+        button("Example local operation (not a Messaging API)") {
+            val op = Telemetry.operationStarted("poc.example", "sdk.example.localWork")
             output.postDelayed({
-                Telemetry.operationCompleted(op, "com.adobe.messaging", "sdk.messaging.refresh",
-                    outcome = "success", outcomeMeaning = "pipeline finalized")
+                Telemetry.operationCompleted(op, "poc.example", "sdk.example.localWork",
+                    outcome = "success", outcomeMeaning = "local example completed")
             }, 350)
         }
         button("Duplicate spam x5 (dedupe window test)") {

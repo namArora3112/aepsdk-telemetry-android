@@ -30,8 +30,9 @@ data class TelemetryRecord(
     /** Omega empty-payload guard equivalent: a record with no identity/meaning is not recordable. */
     fun isMeaningful(): Boolean = producer.isNotBlank() && eventName.isBlank().not()
 
-    /** Dedupe key: Omega-style type + stable content (recordId/operationId excluded). */
-    fun dedupeKey(): String = "$producer|$eventName|$phase|$outcome"
+    /** Correlated work is distinct; only repeated capture of that work is a duplicate. */
+    fun dedupeKey(): String =
+        "$producer|$eventName|$phase|$outcome|${requestId ?: operationId ?: ""}"
 }
 
 /** Batch envelope (schema 3). */

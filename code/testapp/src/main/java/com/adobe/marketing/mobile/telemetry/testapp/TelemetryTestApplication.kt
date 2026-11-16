@@ -4,13 +4,17 @@ import android.app.Application
 import com.adobe.marketing.mobile.AdobeCallback
 import com.adobe.marketing.mobile.LoggingMode
 import com.adobe.marketing.mobile.MobileCore
+import com.adobe.marketing.mobile.CampaignClassic
 import com.adobe.marketing.mobile.telemetry.Telemetry
+import java.util.concurrent.CountDownLatch
 
 /**
  * Customer-install path (Q5 Part 2): one line BEFORE MobileCore.initialize,
  * so pre-initialize calls are also captured.
  */
 class TelemetryTestApplication : Application() {
+    val ready = CountDownLatch(1)
+
     override fun onCreate() {
         super.onCreate()
 
@@ -18,16 +22,9 @@ class TelemetryTestApplication : Application() {
 
         MobileCore.setLogLevel(LoggingMode.DEBUG)
 
-        // Captured even though Core is not initialized yet (pre-init diagnostic):
-        Telemetry.event("com.adobe.module.core", "sdk.core.preInit.customCall")
-
-        MobileCore.initialize(this, "poc-no-appid", AdobeCallback<Any> {
-            // Projection registered after initialize: generic track events map to the catalog name.
-            Telemetry.registerEventHubProjection(
-                com.adobe.marketing.mobile.EventType.GENERIC_TRACK,
-                com.adobe.marketing.mobile.EventSource.REQUEST_CONTENT,
-                "com.adobe.module.core", "analytics.track")
-        })
-        Telemetry.event("com.adobe.module.core", "sdk.core.initialize", "coreBootstrap")
+        MobileCore.setApplication(this)
+        MobileCore.registerExtensions(listOf(CampaignClassic.EXTENSION) + EdgeScenario.extensions()) {
+            ready.countDown()
+        }
     }
 }
