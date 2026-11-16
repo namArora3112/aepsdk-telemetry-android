@@ -21,7 +21,13 @@ class TelemetryTestApplication : Application() {
         // Captured even though Core is not initialized yet (pre-init diagnostic):
         Telemetry.event("com.adobe.module.core", "sdk.core.preInit.customCall")
 
-        MobileCore.initialize(this, "poc-no-appid", AdobeCallback<Any> { /* capture-only POC mode */ })
+        MobileCore.initialize(this, "poc-no-appid", AdobeCallback<Any> {
+            // Projection registered after initialize: generic track events map to the catalog name.
+            Telemetry.registerEventHubProjection(
+                com.adobe.marketing.mobile.EventType.GENERIC_TRACK,
+                com.adobe.marketing.mobile.EventSource.REQUEST_CONTENT,
+                "com.adobe.module.core", "analytics.track")
+        })
         Telemetry.event("com.adobe.module.core", "sdk.core.initialize", "coreBootstrap")
     }
 }

@@ -21,10 +21,14 @@ class MainActivity : Activity() {
             layout.addView(Button(this).apply { text = label; setOnClickListener { onClick(); render() } })
         }
 
-        button("trackAction (hub + direct hook)") {
-            MobileCore.trackAction("poc_action", null)                       // real Core API
+        button("Telemetry via EventHub (projection)") {
+            // business call dispatches a hub event; the projection listener maps it (no direct call here)
+            MobileCore.trackAction("poc_action_hub", null)
+        }
+        button("Telemetry via exposed functions (direct hook)") {
             Telemetry.event("com.adobe.module.core", "sdk.core.trackAction") // direct hook record
         }
+        button("Flush queue (public API)") { Telemetry.flushQueue() }
         button("Simulate Messaging refresh (operationId lifecycle)") {
             val op = Telemetry.operationStarted("com.adobe.messaging", "sdk.messaging.refresh")
             output.postDelayed({

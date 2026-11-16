@@ -99,6 +99,29 @@ object Telemetry {
     @JvmStatic
     fun flush() { maybeFlush(force = true) }
 
+    /**
+     * Public API for consuming extensions (e.g. ACC direct-hook usage): force-seal and upload
+     * the pending queue now. Safe to call anytime; no-op when disabled or endpoint unset.
+     */
+    @JvmStatic
+    fun flushQueue() { maybeFlush(force = true) }
+
+    /** Current pending record count — for extension diagnostics and tests. */
+    @JvmStatic
+    fun pendingCount(): Int = recorder?.pending()?.size ?: 0
+
+    /**
+     * EventHub projection mode (Q6 Part 3): registers a read-only hub listener for the given
+     * event type/source and maps matching events into the recorder. Selector-scoped, never wildcard.
+     * Call AFTER Core is initialized (listener registration is async on the hub executor).
+     */
+    @JvmStatic
+    fun registerEventHubProjection(eventType: String, eventSource: String, producer: String, telemetryEventName: String) {
+        com.adobe.marketing.mobile.MobileCore.registerEventListener(eventType, eventSource) { event ->
+            hubObserved(producer, telemetryEventName, requestId = event.uniqueIdentifier)
+        }
+    }
+
     @JvmStatic
     fun stats(): Map<String, Any?> = mapOf(
         "installed" to installed,
