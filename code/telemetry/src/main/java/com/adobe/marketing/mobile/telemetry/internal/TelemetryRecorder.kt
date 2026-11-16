@@ -1,21 +1,21 @@
 package com.adobe.marketing.mobile.telemetry.internal
 
 import com.adobe.marketing.mobile.telemetry.Clock
-import com.adobe.marketing.mobile.telemetry.IdGenerator
 import com.adobe.marketing.mobile.telemetry.TelemetryConfig
 import com.adobe.marketing.mobile.telemetry.TelemetryRecord
-import java.util.ArrayDeque
 
 /**
- * Single shared recorder (Q2: dual-path, one implementation). Idempotent install-once;
- * both the Core bootstrap hook and the customer install line resolve here.
- * Policy gate at capture: unknown/denied -> record nothing (no buffering).
+ * Single shared recorder (Q2: dual-path, one implementation) over a durable outbox.
+ * Idempotent install-once; both the Core bootstrap hook and the customer install
+ * line resolve here. Policy gate at capture: unknown/denied -> record nothing.
+ * Records persist across process death; they leave the outbox only after a
+ * successful upload or an explicit purge.
  */
 internal class TelemetryRecorder(
     private val clock: Clock,
-    private val configProvider: () -> TelemetryConfig
+    private val configProvider: () -> TelemetryConfig,
+    private val outbox: RecordOutbox = InMemoryOutbox()
 ) {
-    private val queue = ArrayDeque<TelemetryRecord>()
     private val recentKeys = LinkedHashMap<String, Long>() // bounded duplicate history
     private val lock = Any()
 
@@ -39,41 +39,37 @@ internal class TelemetryRecorder(
                 recentKeys.remove(recentKeys.keys.first())
             }
 
-            if (queue.size >= config.maxQueueSize) {
-                queue.pollFirst()                         // evict oldest; drop is counted, not hidden
+            if (outbox.count() >= config.maxQueueSize) {
+                outbox.evictOldest()                      // evict oldest; drop is counted, not hidden
                 droppedCount++
             }
-            queue.addLast(record)
+            outbox.insert(record)
             recordedCount++
             return true
         }
     }
 
-    fun pending(): List<TelemetryRecord> = synchronized(lock) { queue.toList() }
+    fun pending(): List<TelemetryRecord> = outbox.pending()
 
-    fun pendingBytes(): Int = pending().sumOf { it.toJson().toString().toByteArray().size }
+    fun pendingBytes(): Int = outbox.pendingBytes()
 
+    /** Size OR age trigger: flush when the batch threshold is met or the oldest record is stale. */
     fun shouldFlush(): Boolean {
         val c = configProvider()
-        return c.enabled && c.endpoint.isNotBlank() && pendingBytes() >= c.maxBatchBytes
+        if (!c.enabled || c.endpoint.isBlank()) return false
+        if (pendingBytes() >= c.maxBatchBytes) return true
+        val oldest = outbox.oldestTimestamp() ?: return false
+        return clock.nowMs() - oldest >= c.flushIntervalMs
     }
 
-    /** Returns drained records for upload attempt. Caller re-queues on retryable failure. */
-    fun drain(): List<TelemetryRecord> = synchronized(lock) {
-        val out = queue.toList(); queue.clear(); out
-    }
+    /** Oldest records that fit one batch envelope; capped at maxBytes, at least one record. */
+    fun peekBatch(maxBytes: Int): List<TelemetryRecord> = outbox.peekBatch(maxBytes)
 
-    fun requeue(records: List<TelemetryRecord>) = synchronized(lock) {
-        val config = configProvider()
-        if (!config.enabled) return@synchronized
-        records.asReversed().forEach {
-            if (queue.size < config.maxQueueSize) queue.addFirst(it) else droppedCount++
-        }
-        Unit
-    }
+    /** Removes successfully uploaded records. Failed uploads leave records in place. */
+    fun removeSent(recordIds: Collection<String>) = outbox.remove(recordIds)
 
     /** Kill switch: stop capture AND purge local data (Q3 consent semantics). */
-    fun purge() = synchronized(lock) { queue.clear(); recentKeys.clear() }
+    fun purge() = synchronized(lock) { outbox.clear(); recentKeys.clear() }
 
     fun stats(): Map<String, Int> = mapOf(
         "pending" to pending().size, "recorded" to recordedCount, "dropped" to droppedCount

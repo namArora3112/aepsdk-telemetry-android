@@ -1,6 +1,8 @@
 package com.adobe.marketing.mobile.telemetry
 
 import android.app.Application
+import com.adobe.marketing.mobile.telemetry.internal.InMemoryOutbox
+import com.adobe.marketing.mobile.telemetry.internal.SqliteOutbox
 import com.adobe.marketing.mobile.telemetry.internal.TelemetryRecorder
 import com.adobe.marketing.mobile.telemetry.internal.TelemetryStore
 import com.adobe.marketing.mobile.telemetry.internal.TelemetryUploader
@@ -35,7 +37,6 @@ object Telemetry {
     private var ids: IdGenerator = IdGenerator { UUID.randomUUID().toString() }
     private val plugin = TelemetryPlugin()
     private var mappings = TelemetryPlugin.catalog()
-    private var policyGeneration = 0L
     private var coreGeneration = 0L
     private val executor = Executors.newSingleThreadScheduledExecutor { r ->
         Thread(r, "aep-telemetry").apply { isDaemon = true }
@@ -53,7 +54,8 @@ object Telemetry {
             installedAtMs = clock.nowMs()
             config = TelemetryConfig.fromAssets(application)
             store = TelemetryStore(application, ids)
-            recorder = TelemetryRecorder(clock) { config }
+            val outbox = runCatching { SqliteOutbox(application) }.getOrElse { InMemoryOutbox() }
+            recorder = TelemetryRecorder(clock, { config }, outbox)
             uploader = TelemetryUploader(application, store!!, ids, clock)
             MobileCore.addPlugins(plugin)
             publishPolicy()
@@ -157,7 +159,6 @@ object Telemetry {
         synchronized(lock) {
             val wasEnabled = config.enabled
             config = newConfig
-            policyGeneration++
             publishPolicy()
             if (wasEnabled && !newConfig.enabled) recorder?.purge()
         }
@@ -174,7 +175,6 @@ object Telemetry {
             coreGeneration = TelemetryBridge.configure(plugin, installed && config.enabled, catalog)
         } catch (e: IllegalArgumentException) {
             config = config.copy(enabled = false)
-            policyGeneration++
             recorder?.purge()
             coreGeneration = TelemetryBridge.configure(plugin, false, emptyList())
             throw e
@@ -212,16 +212,15 @@ object Telemetry {
             val u = uploader ?: return
             if (!config.enabled || config.endpoint.isBlank()) return
             if (!force && !r.shouldFlush()) return
-            val records = r.drain()
+            val records = r.peekBatch(config.maxBatchBytes)
             if (records.isEmpty()) return
-            val generation = policyGeneration
             val batch = u.buildBatch(records)
-            u.upload(batch, config) { success, retryable ->
-                synchronized(lock) {
-                    if (!success && retryable && config.enabled && policyGeneration == generation) {
-                        r.requeue(records)
-                    }
+            u.upload(batch, config) { success, _ ->
+                if (success) {
+                    synchronized(lock) { r.removeSent(records.map { it.recordId }) }
                 }
+                // Retryable failure: records stay in the durable outbox; an opt-out
+                // purge clears them, so no generation fence is needed for requeue.
             }
         }
     }

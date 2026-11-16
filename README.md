@@ -14,7 +14,7 @@ source below; the typed POC coordinates are not public Maven releases.
 | Customer entry: install before normal Core initialization | `testapp/TelemetryTestApplication.kt` |
 | Install-once shared recorder (dual-path ready) | `Telemetry.install` / `TelemetryRecorder` |
 | Safe default off, kill switch purges | `TelemetryConfig` / `Telemetry.applyConfig` |
-| Bounded queue (256), drop counting | `TelemetryRecorder` |
+| Bounded durable SQLite outbox (256), drop counting, hard byte-capped batches, size-or-age flush | `TelemetryRecorder` / `SqliteOutbox` |
 | Omega lessons: dedupe window, empty-record guard, dry-run seam, injectable clock/IDs | `TelemetryRecorder`, `Telemetry.dryRun`, `Clock`/`IdGenerator` |
 | Schema-3 records + batch envelope (installationId, sdkVersions, operationId lifecycle) | `TelemetryRecord`, `TelemetryBatch` |
 | Core Networking usable pre-init (Q5, verified) | `TelemetryUploader` resolves `ServiceProvider.getInstance().networkService` at send time |
@@ -82,7 +82,9 @@ toolchain; the older shrinker cannot safely process Kotlin 2.2 metadata.
 ## POC limits
 
 Installation is explicit; automatic Core discovery/bootstrap is not implemented.
-The recorder is currently memory-backed, not a durable SQLite outbox.
+Pending records persist in a bounded SQLite outbox (`SqliteOutbox`) and survive
+process death; records leave only after a 2xx upload or an opt-out purge. Batches
+are hard-capped at `maxBatchBytes` and flush on size or record age.
 These tests prove capture and business-dispatch compatibility, not collector
 ingestion or a production consent integration. `flushQueue` retains the separate
 Core Networking upload path; no production endpoint or credentials are needed

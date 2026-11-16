@@ -33,6 +33,22 @@ data class TelemetryRecord(
     /** Correlated work is distinct; only repeated capture of that work is a duplicate. */
     fun dedupeKey(): String =
         "$producer|$eventName|$phase|$outcome|${requestId ?: operationId ?: ""}"
+
+    companion object {
+        fun fromJson(json: JSONObject): TelemetryRecord = TelemetryRecord(
+            recordId = json.getString("recordId"),
+            timestamp = json.getLong("timestamp"),
+            producer = json.getString("producer"),
+            eventName = json.getString("eventName"),
+            phase = json.getString("phase"),
+            capture = json.getString("capture"),
+            operationId = json.optString("operationId").ifBlank { null },
+            requestId = json.optString("requestId").ifBlank { null },
+            outcome = json.optString("outcome").ifBlank { null },
+            outcomeMeaning = json.optString("outcomeMeaning").ifBlank { null },
+            durationMs = if (json.has("durationMs")) json.getLong("durationMs") else null
+        )
+    }
 }
 
 /** Batch envelope (schema 3). */
