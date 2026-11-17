@@ -48,6 +48,7 @@ class TelemetrySdkIntegrationTest {
         assertEquals(2, result.count { it.eventName == "sdk.core.trackAction" })
         assertEquals(1, result.count { it.eventName == "sdk.core.trackState" })
         assertTrue(result.all { it.capture == "hubProjection" })
+        assertTrue(result.all { it.phase == "event" && it.outcome == null && it.durationMs == null })
         assertEquals(3, result.map { it.requestId }.distinct().size)
         assertFalse(result.joinToString { it.toJson().toString() }.contains("private-"))
     }
@@ -63,6 +64,7 @@ class TelemetrySdkIntegrationTest {
             result.map { it.eventName }
         )
         assertTrue(result.all { it.capture == "hubProjection" })
+        assertTrue(result.all { it.phase == "event" && it.outcome == null && it.durationMs == null })
         assertFalse(result.joinToString { it.toJson().toString() }.contains("fake-"))
     }
 
@@ -92,6 +94,9 @@ class TelemetrySdkIntegrationTest {
         assertEquals("sdk.edge.sendEvent", record.eventName)
         assertEquals("hubProjection", record.capture)
         assertNotNull(record.requestId)
+        assertEquals("event", record.phase)
+        assertNull(record.outcome)
+        assertNull(record.durationMs)
     }
 
     @Test
