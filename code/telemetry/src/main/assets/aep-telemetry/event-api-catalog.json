@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "mappings": [
+    {
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "eventName": "Refresh in-app messages",
+      "producer": "com.adobe.messaging",
+      "telemetryEventName": "refreshInAppMessages.requestObserved",
+      "requiredBooleanKey": "refreshmessages"
+    },
+    {
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "eventName": "Update propositions",
+      "producer": "com.adobe.messaging",
+      "telemetryEventName": "updatePropositionsForSurfaces.requestObserved",
+      "requiredBooleanKey": "updatepropositions"
+    },
+    {
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "eventName": "Get propositions",
+      "producer": "com.adobe.messaging",
+      "telemetryEventName": "getPropositionsForSurfaces.requestObserved",
+      "requiredBooleanKey": "getpropositions"
+    },
+    {
+      "eventType": "com.adobe.eventType.generic.track",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "eventName": "Analytics Track",
+      "producer": "com.adobe.module.core",
+      "telemetryEventName": "trackAction.requestObserved",
+      "requiredKey": "action",
+      "forbiddenKey": "state"
+    },
+    {
+      "eventType": "com.adobe.eventType.generic.track",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "eventName": "Analytics Track",
+      "producer": "com.adobe.module.core",
+      "telemetryEventName": "trackState.requestObserved",
+      "requiredKey": "state",
+      "forbiddenKey": "action"
+    },
+    {
+      "eventType": "com.adobe.eventType.generic.lifecycle",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "eventName": "Lifecycle Resume",
+      "producer": "com.adobe.module.core",
+      "telemetryEventName": "lifecycleStart.requestObserved"
+    },
+    {
+      "eventType": "com.adobe.eventType.generic.lifecycle",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "eventName": "Lifecycle Pause",
+      "producer": "com.adobe.module.core",
+      "telemetryEventName": "lifecyclePause.requestObserved"
+    },
+    {
+      "eventType": "com.adobe.eventType.configuration",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "eventName": "Configuration Update",
+      "producer": "com.adobe.module.core",
+      "telemetryEventName": "updateConfiguration.requestObserved"
+    },
+    {
+      "eventType": "com.adobe.eventType.configuration",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "eventName": "Configure with App ID",
+      "producer": "com.adobe.module.core",
+      "telemetryEventName": "configureWithAppID.requestObserved"
+    },
+    {
+      "eventType": "com.adobe.eventType.identity",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "eventName": "IdentityRequestIdentity",
+      "producer": "com.adobe.module.identity",
+      "telemetryEventName": "identityRead.requestObserved"
+    },
+    {
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "eventName": "AEP Request Event",
+      "producer": "com.adobe.edge",
+      "telemetryEventName": "sendEvent.requestObserved"
+    },
+    {
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.errorResponseContent",
+      "eventName": "AEP Error Response",
+      "producer": "com.adobe.edge",
+      "telemetryEventName": "error.responseObserved"
+    }
+  ]
+}

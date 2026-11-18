@@ -4,7 +4,7 @@ plugins {
     `maven-publish`
 }
 group = "com.adobe.marketing.mobile"
-version = "1.0.0-hybrid-poc"
+version = "1.0.0-catalog-poc"
 
 android {
     namespace = "com.adobe.marketing.mobile.telemetry"
@@ -18,7 +18,7 @@ android {
     kotlinOptions { jvmTarget = "17" }
 }
 dependencies {
-    implementation("com.adobe.marketing.mobile:core:3.11.0-telemetry-hybrid-poc-SNAPSHOT")
+    implementation("com.adobe.marketing.mobile:core:3.11.0-telemetry-catalog-poc-SNAPSHOT")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
 }
@@ -30,7 +30,7 @@ afterEvaluate {
                 from(components.findByName("release"))
                 groupId = "com.adobe.marketing.mobile"
                 artifactId = "telemetry"
-                version = "1.0.0-hybrid-poc"
+                version = "1.0.0-catalog-poc"
             }
         }
     }

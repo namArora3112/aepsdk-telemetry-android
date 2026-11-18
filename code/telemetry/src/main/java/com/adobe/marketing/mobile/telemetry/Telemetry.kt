@@ -6,6 +6,9 @@ import com.adobe.marketing.mobile.telemetry.internal.SqliteOutbox
 import com.adobe.marketing.mobile.telemetry.internal.TelemetryRecorder
 import com.adobe.marketing.mobile.telemetry.internal.TelemetryStore
 import com.adobe.marketing.mobile.telemetry.internal.TelemetryUploader
+import com.adobe.marketing.mobile.telemetry.internal.EventApiCatalog
+import com.adobe.marketing.mobile.telemetry.internal.OptimizedSender
+import com.adobe.marketing.mobile.telemetry.internal.DeliveryResult
 import java.util.UUID
 import com.adobe.marketing.mobile.MobileCore
 import com.adobe.marketing.mobile.plugin.TelemetryEventMapping
@@ -37,8 +40,15 @@ object Telemetry {
     private var clock: Clock = Clock { System.currentTimeMillis() }
     private var ids: IdGenerator = IdGenerator { UUID.randomUUID().toString() }
     private val plugin = TelemetryPlugin()
-    private var mappings = TelemetryPlugin.catalog()
+    private var mappings = emptyList<TelemetryEventMapping>()
     private var coreGeneration = 0L
+    private var catalogVersion = 0
+    private var catalogStatus = "not loaded"
+    private var deliveryGeneration = 0L
+    private var uploadInFlight = false
+    private var retryAtMs = 0L
+    private var retryAttempt = 0
+    private var rejectedRecords = 0L
     private val executor = Executors.newSingleThreadScheduledExecutor { r ->
         Thread(r, "aep-telemetry").apply { isDaemon = true }
     }
@@ -54,6 +64,15 @@ object Telemetry {
             installed = true
             installedAtMs = clock.nowMs()
             config = TelemetryConfig.fromAssets(application)
+            try {
+                val catalog = EventApiCatalog.load(application)
+                mappings = catalog.mappings
+                catalogVersion = catalog.version
+                catalogStatus = "loaded"
+            } catch (_: IllegalArgumentException) {
+                config = config.copy(enabled = false)
+                catalogStatus = "invalid; collection disabled"
+            }
             store = TelemetryStore(application, ids)
             val outbox = runCatching { SqliteOutbox(application) }.getOrElse { InMemoryOutbox() }
             recorder = TelemetryRecorder(clock, { config }, outbox)
@@ -64,9 +83,7 @@ object Telemetry {
         recordInternal("com.adobe.module.core", "sdk.telemetry.install", "event", "directHook",
             outcome = if (config.enabled) "success" else "ignored",
             outcomeMeaning = if (config.enabled) "collection enabled" else "disabled by config (safe default)")
-        if (config.enabled) {
-            executor.scheduleWithFixedDelay({ maybeFlush() }, config.flushIntervalMs, config.flushIntervalMs, TimeUnit.MILLISECONDS)
-        }
+        executor.scheduleWithFixedDelay({ runCatching { maybeFlush() } }, 1, 1, TimeUnit.SECONDS)
     }
 
     /** Test seam (Omega testSend parity): same gating as record() — policy, validity, dedupe window — without persisting. */
@@ -150,6 +167,11 @@ object Telemetry {
         "installed" to installed,
         "enabled" to config.enabled,
         "captureGeneration" to coreGeneration,
+        "catalogVersion" to catalogVersion,
+        "catalogStatus" to catalogStatus,
+        "optimizedPayload" to config.optimizedPayload,
+        "uploadInFlight" to uploadInFlight,
+        "rejectedRecords" to rejectedRecords,
         "endpoint" to config.endpoint.ifBlank { "(capture-only)" },
         "lastUpload" to (uploader?.lastUploadStatus ?: "never")
     ) + (recorder?.stats() ?: emptyMap()) + TelemetryBridge.migrationStatus()
@@ -159,9 +181,19 @@ object Telemetry {
     fun applyConfig(newConfig: TelemetryConfig) {
         synchronized(lock) {
             val wasEnabled = config.enabled
-            config = newConfig
-            if (wasEnabled != newConfig.enabled) publishPolicy()
-            if (wasEnabled && !newConfig.enabled) recorder?.purge()
+            val destinationChanged = config.endpoint != newConfig.endpoint || config.orgId != newConfig.orgId ||
+                config.optimizedPayload != newConfig.optimizedPayload
+            config = if (catalogStatus.startsWith("invalid")) newConfig.copy(enabled = false) else newConfig
+            if (wasEnabled != config.enabled || destinationChanged) {
+                deliveryGeneration++
+                retryAtMs = 0
+                retryAttempt = 0
+                publishPolicy()
+            }
+            if ((wasEnabled && !config.enabled) || destinationChanged) {
+                recorder?.purge()
+                store?.adoptionFingerprint = null
+            }
         }
     }
 
@@ -190,13 +222,16 @@ object Telemetry {
         synchronized(lock) {
             val r = recorder ?: return
             if (!config.enabled) return
+            if (!config.captureDirectHooks && capture != "hubProjection") return
+            val context = if (config.optimizedPayload) runCatching { uploader?.captureContext(config) }.getOrNull() ?: return else null
             r.record(TelemetryRecord(ids.newId(), timestamp ?: clock.nowMs(), producer, eventName, phase, capture,
                 operationId, requestId, outcome, outcomeMeaning, durationMs,
                 recordKind = if (api == null) {
                     if (capture == "hubProjection") "event_observation" else "operation"
                 } else if (phase == "started") "api_invocation" else "api_outcome",
                 extensionVersion = api?.extensionVersion, contractVersion = api?.contractVersion,
-                outcomeContract = api?.outcomeContract, coverage = api?.coverage, captureMode = api?.captureMode))
+                outcomeContract = api?.outcomeContract, coverage = api?.coverage, captureMode = api?.captureMode,
+                optimizedContext = context))
         }
     }
 
@@ -218,17 +253,50 @@ object Telemetry {
         synchronized(lock) {
             val r = recorder ?: return
             val u = uploader ?: return
-            if (!config.enabled || config.endpoint.isBlank()) return
+            if (!config.enabled || config.endpoint.isBlank() || uploadInFlight || clock.nowMs() < retryAtMs) return
             if (!force && !r.shouldFlush()) return
             val records = r.peekBatch(config.maxBatchBytes)
             if (records.isEmpty()) return
-            val batch = u.buildBatch(records)
-            u.upload(batch, config) { success, _ ->
-                if (success) {
-                    synchronized(lock) { r.removeSent(records.map { it.recordId }) }
+            uploadInFlight = true
+            val generation = deliveryGeneration
+            val snapshot = config
+            fun permitted() = generation == deliveryGeneration && config.enabled
+            fun finished(result: DeliveryResult) {
+                synchronized(lock) {
+                    uploadInFlight = false
+                    if (permitted()) {
+                        if (result == DeliveryResult.ACCEPTED) {
+                            retryAttempt = 0
+                            retryAtMs = 0
+                        } else {
+                            retryAttempt = minOf(retryAttempt + 1, 8)
+                            retryAtMs = clock.nowMs() + minOf(900_000L, maxOf(5000L, snapshot.flushIntervalMs) * (1L shl retryAttempt))
+                        }
+                    }
                 }
-                // Retryable failure: records stay in the durable outbox; an opt-out
-                // purge clears them, so no generation fence is needed for requeue.
+            }
+            if (snapshot.optimizedPayload) {
+                OptimizedSender { payload, callback ->
+                    synchronized(lock) {
+                        if (permitted()) u.uploadOptimized(payload, snapshot, callback)
+                        else callback(DeliveryResult.RETRYABLE)
+                    }
+                }.send(records,
+                    currentFingerprint = { synchronized(lock) { store?.adoptionFingerprint } },
+                    markAdopted = { synchronized(lock) { if (permitted()) store?.adoptionFingerprint = it } },
+                    permitted = { synchronized(lock) { permitted() } },
+                    acknowledged = { synchronized(lock) { if (permitted()) r.removeSent(listOf(it.recordId)) } },
+                    rejected = { synchronized(lock) { if (permitted()) {
+                        r.removeSent(listOf(it.recordId)); rejectedRecords++
+                    } } },
+                    done = ::finished)
+            } else {
+                u.upload(u.buildBatch(records), snapshot) { success, retryable ->
+                    synchronized(lock) {
+                        if (permitted() && (success || !retryable)) r.removeSent(records.map { it.recordId })
+                    }
+                    finished(if (success) DeliveryResult.ACCEPTED else if (retryable) DeliveryResult.RETRYABLE else DeliveryResult.REJECTED)
+                }
             }
         }
     }

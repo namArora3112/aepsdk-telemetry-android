@@ -13,6 +13,10 @@ internal class TelemetryStore(context: Context, private val ids: com.adobe.marke
             prefs.edit().putString(KEY_INSTALLATION_ID, it).apply()
         }
 
+    var adoptionFingerprint: String?
+        get() = prefs.getString("adoptionFingerprint", null)
+        set(value) { prefs.edit().putString("adoptionFingerprint", value).apply() }
+
     fun purge() = prefs.edit().clear().apply()
 
     private companion object { const val KEY_INSTALLATION_ID = "installationId" }

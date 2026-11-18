@@ -21,7 +21,8 @@ data class TelemetryRecord(
     val contractVersion: Int? = null,
     val outcomeContract: String? = null,
     val coverage: String? = null,
-    val captureMode: String? = null
+    val captureMode: String? = null,
+    val optimizedContext: String? = null
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
         put("recordId", recordId); put("timestamp", timestamp); put("producer", producer)
@@ -37,6 +38,7 @@ data class TelemetryRecord(
         outcomeContract?.let { put("outcomeContract", it) }
         coverage?.let { put("coverage", it) }
         captureMode?.let { put("captureMode", it) }
+        optimizedContext?.let { put("optimizedContext", JSONObject(it)) }
     }
 
     /** Omega empty-payload guard equivalent: a record with no identity/meaning is not recordable. */
@@ -66,7 +68,8 @@ data class TelemetryRecord(
             contractVersion = if (json.has("contractVersion")) json.getInt("contractVersion") else null,
             outcomeContract = json.optString("outcomeContract").ifBlank { null },
             coverage = json.optString("coverage").ifBlank { null },
-            captureMode = json.optString("captureMode").ifBlank { null }
+            captureMode = json.optString("captureMode").ifBlank { null },
+            optimizedContext = json.optJSONObject("optimizedContext")?.toString()
         )
     }
 }
