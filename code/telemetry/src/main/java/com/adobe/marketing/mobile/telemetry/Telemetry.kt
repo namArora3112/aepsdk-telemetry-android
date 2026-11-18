@@ -9,6 +9,7 @@ import com.adobe.marketing.mobile.telemetry.internal.TelemetryUploader
 import java.util.UUID
 import com.adobe.marketing.mobile.MobileCore
 import com.adobe.marketing.mobile.plugin.TelemetryEventMapping
+import com.adobe.marketing.mobile.plugin.TelemetryApiRecord
 import com.adobe.marketing.mobile.telemetrybridge.TelemetryBridge
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -151,7 +152,7 @@ object Telemetry {
         "captureGeneration" to coreGeneration,
         "endpoint" to config.endpoint.ifBlank { "(capture-only)" },
         "lastUpload" to (uploader?.lastUploadStatus ?: "never")
-    ) + (recorder?.stats() ?: emptyMap())
+    ) + (recorder?.stats() ?: emptyMap()) + TelemetryBridge.migrationStatus()
 
     /** Policy change entry point (remote kill switch lands here). Deny -> purge. */
     @JvmStatic
@@ -159,7 +160,7 @@ object Telemetry {
         synchronized(lock) {
             val wasEnabled = config.enabled
             config = newConfig
-            publishPolicy()
+            if (wasEnabled != newConfig.enabled) publishPolicy()
             if (wasEnabled && !newConfig.enabled) recorder?.purge()
         }
     }
@@ -184,12 +185,18 @@ object Telemetry {
     private fun recordInternal(producer: String, eventName: String, phase: String, capture: String,
                                operationId: String? = null, requestId: String? = null,
                                outcome: String? = null, outcomeMeaning: String? = null,
-                               durationMs: Long? = null, timestamp: Long? = null) {
+                               durationMs: Long? = null, timestamp: Long? = null,
+                               api: TelemetryApiRecord? = null) {
         synchronized(lock) {
             val r = recorder ?: return
             if (!config.enabled) return
             r.record(TelemetryRecord(ids.newId(), timestamp ?: clock.nowMs(), producer, eventName, phase, capture,
-                operationId, requestId, outcome, outcomeMeaning, durationMs))
+                operationId, requestId, outcome, outcomeMeaning, durationMs,
+                recordKind = if (api == null) {
+                    if (capture == "hubProjection") "event_observation" else "operation"
+                } else if (phase == "started") "api_invocation" else "api_outcome",
+                extensionVersion = api?.extensionVersion, contractVersion = api?.contractVersion,
+                outcomeContract = api?.outcomeContract, coverage = api?.coverage, captureMode = api?.captureMode))
         }
     }
 
@@ -197,16 +204,17 @@ object Telemetry {
         producer: String, eventName: String, phase: String, capture: String,
         operationId: String? = null, requestId: String? = null, outcome: String? = null,
         meaning: String? = null, durationMs: Long? = null, timestamp: Long? = null,
-        generation: Long
+        generation: Long, api: TelemetryApiRecord? = null
     ) {
         synchronized(lock) {
             if (generation != coreGeneration) return
             recordInternal(producer, eventName, phase, capture, operationId, requestId,
-                outcome, meaning, durationMs, timestamp)
+                outcome, meaning, durationMs, timestamp, api)
         }
     }
 
     private fun maybeFlush(force: Boolean = false) {
+        TelemetryBridge.expireApiOperations()
         synchronized(lock) {
             val r = recorder ?: return
             val u = uploader ?: return

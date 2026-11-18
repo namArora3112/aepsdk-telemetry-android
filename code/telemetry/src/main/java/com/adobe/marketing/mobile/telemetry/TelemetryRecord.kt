@@ -3,7 +3,7 @@ package com.adobe.marketing.mobile.telemetry
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** One telemetry record (schema 3). */
+/** One telemetry record (POC schema 4). */
 data class TelemetryRecord(
     val recordId: String,
     val timestamp: Long,
@@ -15,7 +15,13 @@ data class TelemetryRecord(
     val requestId: String? = null,
     val outcome: String? = null,          // "success" | "failure" | "rejected" | "ignored"
     val outcomeMeaning: String? = null,
-    val durationMs: Long? = null
+    val durationMs: Long? = null,
+    val recordKind: String = if (capture == "hubProjection") "event_observation" else "operation",
+    val extensionVersion: String? = null,
+    val contractVersion: Int? = null,
+    val outcomeContract: String? = null,
+    val coverage: String? = null,
+    val captureMode: String? = null
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
         put("recordId", recordId); put("timestamp", timestamp); put("producer", producer)
@@ -25,6 +31,12 @@ data class TelemetryRecord(
         outcome?.let { put("outcome", it) }
         outcomeMeaning?.let { put("outcomeMeaning", it) }
         durationMs?.let { put("durationMs", it) }
+        put("recordKind", recordKind)
+        extensionVersion?.let { put("extensionVersion", it) }
+        contractVersion?.let { put("contractVersion", it) }
+        outcomeContract?.let { put("outcomeContract", it) }
+        coverage?.let { put("coverage", it) }
+        captureMode?.let { put("captureMode", it) }
     }
 
     /** Omega empty-payload guard equivalent: a record with no identity/meaning is not recordable. */
@@ -32,7 +44,7 @@ data class TelemetryRecord(
 
     /** Correlated work is distinct; only repeated capture of that work is a duplicate. */
     fun dedupeKey(): String =
-        "$producer|$eventName|$phase|$outcome|${requestId ?: operationId ?: ""}"
+        "$recordKind|$producer|$eventName|$phase|$outcome|${requestId ?: operationId ?: ""}"
 
     companion object {
         fun fromJson(json: JSONObject): TelemetryRecord = TelemetryRecord(
@@ -46,12 +58,20 @@ data class TelemetryRecord(
             requestId = json.optString("requestId").ifBlank { null },
             outcome = json.optString("outcome").ifBlank { null },
             outcomeMeaning = json.optString("outcomeMeaning").ifBlank { null },
-            durationMs = if (json.has("durationMs")) json.getLong("durationMs") else null
+            durationMs = if (json.has("durationMs")) json.getLong("durationMs") else null,
+            recordKind = json.optString("recordKind").ifBlank {
+                if (json.getString("capture") == "hubProjection") "event_observation" else "operation"
+            },
+            extensionVersion = json.optString("extensionVersion").ifBlank { null },
+            contractVersion = if (json.has("contractVersion")) json.getInt("contractVersion") else null,
+            outcomeContract = json.optString("outcomeContract").ifBlank { null },
+            coverage = json.optString("coverage").ifBlank { null },
+            captureMode = json.optString("captureMode").ifBlank { null }
         )
     }
 }
 
-/** Batch envelope (schema 3). */
+/** Batch envelope (POC schema 4). */
 data class TelemetryBatch(
     val batchId: String,
     val createdAtMs: Long,
@@ -62,7 +82,7 @@ data class TelemetryBatch(
     val records: List<TelemetryRecord>
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
-        put("schemaVersion", 3); put("catalogVersion", 1)
+        put("schemaVersion", 4); put("catalogVersion", 2)
         put("batchId", batchId)
         put("createdAt", java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).apply { timeZone = java.util.TimeZone.getTimeZone("UTC") }.format(java.util.Date(createdAtMs)))
         put("product", "aep-mobile-sdk"); put("environment", "stage")

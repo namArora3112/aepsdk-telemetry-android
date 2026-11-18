@@ -32,7 +32,7 @@ android {
 }
 dependencies {
     implementation(project(":telemetry"))
-    implementation("com.adobe.marketing.mobile:core:3.11.0-telemetry-typed")
+    implementation("com.adobe.marketing.mobile:core:3.11.0-telemetry-hybrid-poc-SNAPSHOT")
     implementation("com.adobe.marketing.mobile:campaignclassic:3.1.4-telemetry-typed")
     "withEdgeImplementation"("com.adobe.marketing.mobile:edge:3.0.0-telemetry-typed")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
