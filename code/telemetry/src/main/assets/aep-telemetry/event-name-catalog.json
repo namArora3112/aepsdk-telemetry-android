@@ -1,0 +1,1570 @@
+{
+  "schemaVersion": 2,
+  "catalogVersion": 2,
+  "mappings": [
+    {
+      "eventName": "AEP Error Response",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.errorResponseContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "AEP Request Event",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "prefetchOffers",
+        "sendEvent"
+      ]
+    },
+    {
+      "eventName": "AEP Response Complete",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.contentComplete",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "AEP Response Event Handle",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "AEP Response Event Handle",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "consent:preferences",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "AEP Response Event Handle",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "media-analytics:new-session",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "AEP Response Event Handle",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "personalization:decisions",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Analytics Track",
+      "eventType": "com.adobe.eventType.generic.track",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.core",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "trackAction",
+        "trackState"
+      ]
+    },
+    {
+      "eventName": "AnalyticsForIdentityRequest",
+      "eventType": "com.adobe.eventType.analytics",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "AnalyticsForTargetRequest",
+      "eventType": "com.adobe.eventType.analytics",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "AnalyticsResponse",
+      "eventType": "com.adobe.eventType.analytics",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Application Close (Background)",
+      "eventType": "com.adobe.eventType.lifecycle",
+      "eventSource": "com.adobe.eventSource.applicationClose",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Application Launch (Foreground)",
+      "eventType": "com.adobe.eventType.lifecycle",
+      "eventSource": "com.adobe.eventSource.applicationLaunch",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Assurance Start Session",
+      "eventType": "com.adobe.eventType.assurance",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.assurance",
+      "category": "API_CALL",
+      "apiName": "startSession"
+    },
+    {
+      "eventName": "Assurance Start Session (Quick Connect)",
+      "eventType": "com.adobe.eventType.assurance",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.assurance",
+      "category": "API_CALL",
+      "apiName": "startSession"
+    },
+    {
+      "eventName": "Audience Manager Identities",
+      "eventType": "com.adobe.eventType.audienceManager",
+      "eventSource": "com.adobe.eventSource.responseIdentity",
+      "extension": "com.adobe.module.audience",
+      "category": "API_RESPONSE",
+      "apiName": "getVisitorProfile"
+    },
+    {
+      "eventName": "Audience Manager Profile",
+      "eventType": "com.adobe.eventType.audienceManager",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.audience",
+      "category": "API_RESPONSE",
+      "apiName": "signalWithData"
+    },
+    {
+      "eventName": "AudienceRequestContent",
+      "eventType": "com.adobe.eventType.audienceManager",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.audience",
+      "category": "API_CALL",
+      "apiName": "signalWithData"
+    },
+    {
+      "eventName": "AudienceRequestIdentity",
+      "eventType": "com.adobe.eventType.audienceManager",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.audience",
+      "category": "API_CALL",
+      "apiName": "getVisitorProfile"
+    },
+    {
+      "eventName": "AudienceRequestReset",
+      "eventType": "com.adobe.eventType.audienceManager",
+      "eventSource": "com.adobe.eventSource.requestReset",
+      "extension": "com.adobe.module.audience",
+      "category": "API_CALL",
+      "apiName": "reset"
+    },
+    {
+      "eventName": "Brand Concierge CTA Button Clicked",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Card Clicked",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Cards Rendered",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Chat Closed",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Chat Opened",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Conversation Ended",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Disclaimer Link Clicked",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Error Occurred",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Feedback Submitted",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Link Clicked",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Mic Button Clicked",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Prompt Suggestion Clicked",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Query Submitted",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Response Completed",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Response Started",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Session Initialized",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Brand Concierge Welcome Prompt Suggestion Clicked",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "CampaignClassic Register Device",
+      "eventType": "com.adobe.eventType.campaign",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.campaignclassic",
+      "category": "API_CALL",
+      "apiName": "registerDevice"
+    },
+    {
+      "eventName": "CampaignClassic Track Notification Click",
+      "eventType": "com.adobe.eventType.campaign",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.campaignclassic",
+      "category": "API_CALL",
+      "apiName": "trackNotificationClick"
+    },
+    {
+      "eventName": "CampaignClassic Track Notification Receive",
+      "eventType": "com.adobe.eventType.campaign",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.campaignclassic",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "handleRemoteMessage",
+        "trackNotificationReceive"
+      ]
+    },
+    {
+      "eventName": "Clear Updated Configuration",
+      "eventType": "com.adobe.eventType.configuration",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.core",
+      "category": "API_CALL",
+      "apiName": "clearUpdatedConfiguration"
+    },
+    {
+      "eventName": "Clear cached propositions",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.messaging",
+      "category": "API_CALL",
+      "apiName": "clearCachedPropositions"
+    },
+    {
+      "eventName": "ClearHitsQueue",
+      "eventType": "com.adobe.eventType.analytics",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.analytics",
+      "category": "API_CALL",
+      "apiName": "clearQueue"
+    },
+    {
+      "eventName": "Collect Data",
+      "eventType": "com.adobe.eventType.generic.data",
+      "eventSource": "com.adobe.eventSource.os",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "collectMessageInfo",
+        "onReceive"
+      ]
+    },
+    {
+      "eventName": "Collect PII",
+      "eventType": "com.adobe.eventType.generic.pii",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.core",
+      "category": "API_CALL",
+      "apiName": "collectPii"
+    },
+    {
+      "eventName": "Concierge Data Handoff Event",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "brandconcierge",
+      "category": "API_CALL",
+      "apiName": "sendDataHandoff"
+    },
+    {
+      "eventName": "Concierge Data Handoff Event Response",
+      "eventType": "com.adobe.eventType.concierge",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "brandconcierge",
+      "category": "API_RESPONSE",
+      "apiName": "sendDataHandoff"
+    },
+    {
+      "eventName": "Concierge Tracking Edge Request",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Configuration Response",
+      "eventType": "com.adobe.eventType.configuration",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Configuration Response Identity",
+      "eventType": "com.adobe.eventType.configuration",
+      "eventSource": "com.adobe.eventSource.responseIdentity",
+      "extension": "com.adobe.module.core",
+      "category": "API_RESPONSE",
+      "apiName": "getSdkIdentities"
+    },
+    {
+      "eventName": "Configuration Update",
+      "eventType": "com.adobe.eventType.configuration",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.core",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "setPrivacyStatus",
+        "updateConfiguration"
+      ]
+    },
+    {
+      "eventName": "Configure with App ID",
+      "eventType": "com.adobe.eventType.configuration",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.core",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "configureWithAppID",
+        "initialize"
+      ]
+    },
+    {
+      "eventName": "Configure with File Path",
+      "eventType": "com.adobe.eventType.configuration",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.core",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "configureWithFileInAssets",
+        "configureWithFileInPath",
+        "initialize"
+      ]
+    },
+    {
+      "eventName": "Consent Preferences Updated",
+      "eventType": "com.adobe.eventType.edgeConsent",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Consent Update Request",
+      "eventType": "com.adobe.eventType.edgeConsent",
+      "eventSource": "com.adobe.eventSource.updateConsent",
+      "extension": "com.adobe.edge.consent",
+      "category": "API_CALL",
+      "apiName": "update"
+    },
+    {
+      "eventName": "DataForMessageRequest",
+      "eventType": "com.adobe.eventType.campaign",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Device Attributes Response",
+      "eventType": "com.adobe.eventType.edgeBypassConsent",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Device Registration Status",
+      "eventType": "com.adobe.eventType.campaign",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.campaignclassic",
+      "category": "API_RESPONSE",
+      "apiName": "registerDevice"
+    },
+    {
+      "eventName": "Edge Bridge Request",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Consent Update Request",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.updateConsent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Identity Remove Identities",
+      "eventType": "com.adobe.eventType.edgeIdentity",
+      "eventSource": "com.adobe.eventSource.removeIdentity",
+      "extension": "com.adobe.edge.identity",
+      "category": "API_CALL",
+      "apiName": "removeIdentity"
+    },
+    {
+      "eventName": "Edge Identity Request ECID",
+      "eventType": "com.adobe.eventType.edgeIdentity",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.edge.identity",
+      "category": "API_CALL",
+      "apiName": "getExperienceCloudId"
+    },
+    {
+      "eventName": "Edge Identity Request Identities",
+      "eventType": "com.adobe.eventType.edgeIdentity",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.edge.identity",
+      "category": "API_CALL",
+      "apiName": "getIdentities"
+    },
+    {
+      "eventName": "Edge Identity Request URL Variables",
+      "eventType": "com.adobe.eventType.edgeIdentity",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.edge.identity",
+      "category": "API_CALL",
+      "apiName": "getUrlVariables"
+    },
+    {
+      "eventName": "Edge Identity Response Content One Time",
+      "eventType": "com.adobe.eventType.edgeIdentity",
+      "eventSource": "com.adobe.eventSource.responseIdentity",
+      "extension": "com.adobe.edge.identity",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "getExperienceCloudId",
+        "getIdentities"
+      ]
+    },
+    {
+      "eventName": "Edge Identity Response URL Variables",
+      "eventType": "com.adobe.eventType.edgeIdentity",
+      "eventSource": "com.adobe.eventSource.responseIdentity",
+      "extension": "com.adobe.edge.identity",
+      "category": "API_RESPONSE",
+      "apiName": "getUrlVariables"
+    },
+    {
+      "eventName": "Edge Identity Update Identities",
+      "eventType": "com.adobe.eventType.edgeIdentity",
+      "eventSource": "com.adobe.eventSource.updateIdentity",
+      "extension": "com.adobe.edge.identity",
+      "category": "API_CALL",
+      "apiName": "updateIdentities"
+    },
+    {
+      "eventName": "Edge Location Hint Response",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.responseIdentity",
+      "extension": "com.adobe.edge",
+      "category": "API_RESPONSE",
+      "apiName": "getLocationHint"
+    },
+    {
+      "eventName": "Edge Media - media.adBreakComplete",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.adBreakStart",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.adComplete",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.adSkip",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.adStart",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.bitrateChange",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.bufferStart",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.chapterComplete",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.chapterSkip",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.chapterStart",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.error",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.pauseStart",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.ping",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.play",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.sessionComplete",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.sessionEnd",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.sessionStart",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media - media.statesUpdate",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Media CreateTrackerRequest",
+      "eventType": "com.adobe.eventType.edgeMedia",
+      "eventSource": "com.adobe.eventSource.createTracker",
+      "extension": "com.adobe.edge.media",
+      "category": "API_CALL",
+      "apiName": "createTracker"
+    },
+    {
+      "eventName": "Edge Media TrackMedia",
+      "eventType": "com.adobe.eventType.edgeMedia",
+      "eventSource": "com.adobe.eventSource.trackMedia",
+      "extension": "com.adobe.edge.media",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "trackComplete",
+        "trackError",
+        "trackEvent",
+        "trackPause",
+        "trackPlay",
+        "trackSessionEnd",
+        "trackSessionStart",
+        "updateCurrentPlayhead",
+        "updateQoEObject"
+      ]
+    },
+    {
+      "eventName": "Edge Optimize Personalization Request",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Optimize Proposition Interaction Request",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Edge Request Location Hint",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.edge",
+      "category": "API_CALL",
+      "apiName": "getLocationHint"
+    },
+    {
+      "eventName": "Edge Update Location Hint",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.updateIdentity",
+      "extension": "com.adobe.edge",
+      "category": "API_CALL",
+      "apiName": "setLocationHint"
+    },
+    {
+      "eventName": "Edge device attributes request",
+      "eventType": "com.adobe.eventType.edgeDeviceAttributes",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Finalize propositions response",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.contentComplete",
+      "extension": "com.adobe.messaging",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "handleNotificationResponse",
+        "refreshInAppMessages",
+        "updatePropositionsForSurfaces"
+      ]
+    },
+    {
+      "eventName": "Flags Edge Feature Exposure",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Flags Get Feature Request",
+      "eventType": "com.adobe.eventType.flags",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.flags",
+      "category": "API_CALL",
+      "apiName": "getFeature"
+    },
+    {
+      "eventName": "Flags Is Feature Enabled Request",
+      "eventType": "com.adobe.eventType.flags",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.flags",
+      "category": "API_CALL",
+      "apiName": "isFeatureEnabled"
+    },
+    {
+      "eventName": "Flags Response",
+      "eventType": "com.adobe.eventType.flags",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.flags",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "getFeature",
+        "isFeatureEnabled"
+      ]
+    },
+    {
+      "eventName": "ForceKickHits",
+      "eventType": "com.adobe.eventType.analytics",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.analytics",
+      "category": "API_CALL",
+      "apiName": "sendQueuedHits"
+    },
+    {
+      "eventName": "Get Consents Request",
+      "eventType": "com.adobe.eventType.edgeConsent",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.edge.consent",
+      "category": "API_CALL",
+      "apiName": "getConsents"
+    },
+    {
+      "eventName": "Get Consents Response",
+      "eventType": "com.adobe.eventType.edgeConsent",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.edge.consent",
+      "category": "API_RESPONSE",
+      "apiName": "getConsents"
+    },
+    {
+      "eventName": "Get SDK Identities",
+      "eventType": "com.adobe.eventType.configuration",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.core",
+      "category": "API_CALL",
+      "apiName": "getSdkIdentities"
+    },
+    {
+      "eventName": "Get propositions",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.messaging",
+      "category": "API_CALL",
+      "apiName": "getPropositionsForSurfaces"
+    },
+    {
+      "eventName": "GetQueueSize",
+      "eventType": "com.adobe.eventType.analytics",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.analytics",
+      "category": "API_CALL",
+      "apiName": "getQueueSize"
+    },
+    {
+      "eventName": "GetTrackingIdentifier",
+      "eventType": "com.adobe.eventType.analytics",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.analytics",
+      "category": "API_CALL",
+      "apiName": "getTrackingIdentifier"
+    },
+    {
+      "eventName": "GetVisitorIdentifier",
+      "eventType": "com.adobe.eventType.analytics",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.analytics",
+      "category": "API_CALL",
+      "apiName": "getVisitorIdentifier"
+    },
+    {
+      "eventName": "IDENTITY_APPENDED_URL",
+      "eventType": "com.adobe.eventType.identity",
+      "eventSource": "com.adobe.eventSource.responseIdentity",
+      "extension": "com.adobe.module.identity",
+      "category": "API_RESPONSE",
+      "apiName": "appendVisitorInfoForURL"
+    },
+    {
+      "eventName": "IDENTITY_RESPONSE_CONTENT_ONE_TIME",
+      "eventType": "com.adobe.eventType.identity",
+      "eventSource": "com.adobe.eventSource.responseIdentity",
+      "extension": "com.adobe.module.identity",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "getExperienceCloudId",
+        "getIdentifiers"
+      ]
+    },
+    {
+      "eventName": "IDENTITY_URL_VARIABLES",
+      "eventType": "com.adobe.eventType.identity",
+      "eventSource": "com.adobe.eventSource.responseIdentity",
+      "extension": "com.adobe.module.identity",
+      "category": "API_RESPONSE",
+      "apiName": "getUrlVariables"
+    },
+    {
+      "eventName": "IdentityRequestIdentity",
+      "eventType": "com.adobe.eventType.identity",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.identity",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "appendVisitorInfoForURL",
+        "getExperienceCloudId",
+        "getIdentifiers",
+        "getUrlVariables",
+        "syncIdentifier",
+        "syncIdentifiers"
+      ]
+    },
+    {
+      "eventName": "Lifecycle Pause",
+      "eventType": "com.adobe.eventType.generic.lifecycle",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.core",
+      "category": "API_CALL",
+      "apiName": "lifecyclePause"
+    },
+    {
+      "eventName": "Lifecycle Resume",
+      "eventType": "com.adobe.eventType.generic.lifecycle",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.core",
+      "category": "API_CALL",
+      "apiName": "lifecycleStart"
+    },
+    {
+      "eventName": "LifecycleStart",
+      "eventType": "com.adobe.eventType.lifecycle",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Live Update Event Tracking",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "handleNotificationResponse",
+        "trackLiveUpdateEvent",
+        "trackTopicSubscribed",
+        "trackTopicUnsubscribed",
+        "triggerLocalLiveUpdate"
+      ]
+    },
+    {
+      "eventName": "Live Update Incompatible",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.errorResponseContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Live Update Render Error",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.errorResponseContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Location Tracking Event",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Media::CreateTrackerRequest",
+      "eventType": "com.adobe.eventType.media",
+      "eventSource": "com.adobe.eventsource.media.requesttracker",
+      "extension": "com.adobe.module.media",
+      "category": "API_CALL",
+      "apiName": "createTracker"
+    },
+    {
+      "eventName": "Media::SessionCreated",
+      "eventType": "com.adobe.eventType.media",
+      "eventSource": "com.adobe.eventsource.media.sessioncreated",
+      "extension": "com.adobe.module.media",
+      "category": "API_RESPONSE",
+      "apiName": "trackSessionStart"
+    },
+    {
+      "eventName": "Media::TrackMedia",
+      "eventType": "com.adobe.eventType.media",
+      "eventSource": "com.adobe.eventsource.media.trackmedia",
+      "extension": "com.adobe.module.media",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "trackComplete",
+        "trackError",
+        "trackEvent",
+        "trackPause",
+        "trackPlay",
+        "trackSessionEnd",
+        "trackSessionStart",
+        "updateCurrentPlayhead",
+        "updateQoEObject"
+      ]
+    },
+    {
+      "eventName": "Message propositions notification",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Message propositions response",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.messaging",
+      "category": "API_RESPONSE",
+      "apiName": "getPropositionsForSurfaces"
+    },
+    {
+      "eventName": "Messaging interaction event",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Offer Decisioning Request",
+      "eventType": "com.adobe.eventType.offerDecisioning",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.offerdecisioning",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "prefetchOffers",
+        "retrievePrefetchedOffers"
+      ]
+    },
+    {
+      "eventName": "Offer Decisioning Response",
+      "eventType": "com.adobe.eventType.offerDecisioning",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.offerdecisioning",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Offer Decisioning Response",
+      "eventType": "com.adobe.eventType.offerDecisioning",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.offerdecisioning",
+      "category": "API_RESPONSE",
+      "apiName": "retrievePrefetchedOffers"
+    },
+    {
+      "eventName": "Operational Data Sync Result",
+      "eventType": "com.adobe.eventType.edgeIdentity",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Operational data confirmed",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Operational data for rules engine",
+      "eventType": "com.adobe.eventType.generic.operationalData",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Optimize Clear Propositions Request",
+      "eventType": "com.adobe.eventType.optimize",
+      "eventSource": "com.adobe.eventSource.requestReset",
+      "extension": "com.adobe.optimize",
+      "category": "API_CALL",
+      "apiName": "clearCachedPropositions"
+    },
+    {
+      "eventName": "Optimize Get Propositions Request",
+      "eventType": "com.adobe.eventType.optimize",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.optimize",
+      "category": "API_CALL",
+      "apiName": "getPropositions"
+    },
+    {
+      "eventName": "Optimize Notification",
+      "eventType": "com.adobe.eventType.optimize",
+      "eventSource": "com.adobe.eventSource.notification",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Optimize Response",
+      "eventType": "com.adobe.eventType.optimize",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.optimize",
+      "category": "API_RESPONSE",
+      "apiName": "getPropositions"
+    },
+    {
+      "eventName": "Optimize Track Propositions Request",
+      "eventType": "com.adobe.eventType.optimize",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.optimize",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "displayed",
+        "tapped"
+      ]
+    },
+    {
+      "eventName": "Optimize Update Propositions Complete",
+      "eventType": "com.adobe.eventType.optimize",
+      "eventSource": "com.adobe.eventSource.contentComplete",
+      "extension": "com.adobe.optimize",
+      "category": "API_RESPONSE",
+      "apiName": "updatePropositions"
+    },
+    {
+      "eventName": "Optimize Update Propositions Request",
+      "eventType": "com.adobe.eventType.optimize",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.optimize",
+      "category": "API_CALL",
+      "apiName": "updatePropositions"
+    },
+    {
+      "eventName": "Privacy Status Request",
+      "eventType": "com.adobe.eventType.configuration",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.core",
+      "category": "API_CALL",
+      "apiName": "getPrivacyStatus"
+    },
+    {
+      "eventName": "Push notification interaction event",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.messaging",
+      "category": "API_CALL",
+      "apiName": "handleNotificationResponse"
+    },
+    {
+      "eventName": "Push notification received",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.messaging",
+      "category": "API_CALL",
+      "apiName": "trackPushReceived"
+    },
+    {
+      "eventName": "Push to in-app",
+      "eventType": "com.adobe.eventType.rulesEngine",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Push tracking edge event",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Push tracking status event",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.messaging",
+      "category": "API_RESPONSE",
+      "apiName": "handleNotificationResponse"
+    },
+    {
+      "eventName": "QueueSizeValue",
+      "eventType": "com.adobe.eventType.analytics",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.analytics",
+      "category": "API_RESPONSE",
+      "apiName": "getQueueSize"
+    },
+    {
+      "eventName": "Refresh in-app messages",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.messaging",
+      "category": "API_CALL",
+      "apiName": "refreshInAppMessages"
+    },
+    {
+      "eventName": "RemoveUserProfile",
+      "eventType": "com.adobe.eventType.userProfile",
+      "eventSource": "com.adobe.eventSource.requestReset",
+      "extension": "com.adobe.module.userProfile",
+      "category": "API_CALL",
+      "apiName": "removeUserAttributes"
+    },
+    {
+      "eventName": "Reset Identities Request",
+      "eventType": "com.adobe.eventType.generic.identity",
+      "eventSource": "com.adobe.eventSource.requestReset",
+      "extension": "com.adobe.module.core",
+      "category": "API_CALL",
+      "apiName": "resetIdentities"
+    },
+    {
+      "eventName": "Retrieve message definitions",
+      "eventType": "com.adobe.eventType.edge",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Set Advertising Identifier",
+      "eventType": "com.adobe.eventType.generic.identity",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.core",
+      "category": "API_CALL",
+      "apiName": "setAdvertisingIdentifier"
+    },
+    {
+      "eventName": "Set Push Identifier",
+      "eventType": "com.adobe.eventType.generic.identity",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.core",
+      "category": "API_CALL",
+      "apiName": "setPushIdentifier"
+    },
+    {
+      "eventName": "Shared state change",
+      "eventType": "com.adobe.eventType.hub",
+      "eventSource": "com.adobe.eventSource.sharedState",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Shared state change (XDM)",
+      "eventType": "com.adobe.eventType.hub",
+      "eventSource": "com.adobe.eventSource.sharedState",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "TargetClearPrefetchCache",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestReset",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "clearPrefetchCache"
+    },
+    {
+      "eventName": "TargetGetSessionIdentifier",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "getSessionId"
+    },
+    {
+      "eventName": "TargetGetThirdPartyIdentifier",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "getThirdPartyId"
+    },
+    {
+      "eventName": "TargetGetTnTIdentifier",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "getTntId"
+    },
+    {
+      "eventName": "TargetLoadRequest",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "retrieveLocationContent"
+    },
+    {
+      "eventName": "TargetLocationClicked",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "clickedLocation"
+    },
+    {
+      "eventName": "TargetLocationsDisplayed",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "displayedLocations"
+    },
+    {
+      "eventName": "TargetPrefetchRequest",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "prefetchContent"
+    },
+    {
+      "eventName": "TargetPrefetchResponse",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.target",
+      "category": "API_RESPONSE",
+      "apiName": "prefetchContent"
+    },
+    {
+      "eventName": "TargetRawNotifications",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "sendRawNotifications"
+    },
+    {
+      "eventName": "TargetRawRequest",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "executeRawRequest"
+    },
+    {
+      "eventName": "TargetRawResponse",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.target",
+      "category": "API_RESPONSE",
+      "apiName": "executeRawRequest"
+    },
+    {
+      "eventName": "TargetRequestReset",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestReset",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "resetExperience"
+    },
+    {
+      "eventName": "TargetRequestResponse",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.module.target",
+      "category": "API_RESPONSE",
+      "apiName": "retrieveLocationContent"
+    },
+    {
+      "eventName": "TargetResponseIdentity",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.responseIdentity",
+      "extension": "com.adobe.module.target",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "getSessionId",
+        "getThirdPartyId",
+        "getTntId"
+      ]
+    },
+    {
+      "eventName": "TargetSetPreviewRestartDeeplink",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "setPreviewRestartDeepLink"
+    },
+    {
+      "eventName": "TargetSetSessionIdentifier",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "setSessionId"
+    },
+    {
+      "eventName": "TargetSetThirdPartyIdentifier",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "setThirdPartyId"
+    },
+    {
+      "eventName": "TargetSetTnTIdentifier",
+      "eventType": "com.adobe.eventType.target",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.target",
+      "category": "API_CALL",
+      "apiName": "setTntId"
+    },
+    {
+      "eventName": "Track propositions",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.messaging",
+      "category": "API_CALL",
+      "apiName": "track"
+    },
+    {
+      "eventName": "TrackingIdentifierValue",
+      "eventType": "com.adobe.eventType.analytics",
+      "eventSource": "com.adobe.eventSource.responseIdentity",
+      "extension": "com.adobe.module.analytics",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "getTrackingIdentifier",
+        "getVisitorIdentifier",
+        "setVisitorIdentifier"
+      ]
+    },
+    {
+      "eventName": "UPDATED_IDENTITY_RESPONSE",
+      "eventType": "com.adobe.eventType.identity",
+      "eventSource": "com.adobe.eventSource.responseIdentity",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "Update Operational Data",
+      "eventType": "com.adobe.eventType.edgeIdentity",
+      "eventSource": "com.adobe.eventSource.requestOperationalData",
+      "extension": "com.adobe.edge.identity",
+      "category": "API_CALL",
+      "apiName": "updateOperationalData"
+    },
+    {
+      "eventName": "Update Profile Attributes",
+      "eventType": "com.adobe.eventType.profileAttribute",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.module.core",
+      "category": "API_CALL",
+      "apiName": "updateProfileAttributes"
+    },
+    {
+      "eventName": "Update propositions",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.messaging",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "handleNotificationResponse",
+        "updatePropositionsForSurfaces"
+      ]
+    },
+    {
+      "eventName": "UpdateVisitorIdentifier",
+      "eventType": "com.adobe.eventType.analytics",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.analytics",
+      "category": "API_CALL",
+      "apiName": "setVisitorIdentifier"
+    },
+    {
+      "eventName": "UserProfile Response Event",
+      "eventType": "com.adobe.eventType.userProfile",
+      "eventSource": "com.adobe.eventSource.responseProfile",
+      "extension": "com.adobe.module.userProfile",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "getUserAttributes",
+        "removeUserAttributes",
+        "updateUserAttributes"
+      ]
+    },
+    {
+      "eventName": "UserProfileUpdate",
+      "eventType": "com.adobe.eventType.userProfile",
+      "eventSource": "com.adobe.eventSource.requestProfile",
+      "extension": "com.adobe.module.userProfile",
+      "category": "API_CALL",
+      "apiName": "updateUserAttributes"
+    },
+    {
+      "eventName": "Write IAM event to history",
+      "eventType": "com.adobe.eventType.messaging",
+      "eventSource": "com.adobe.eventSource.eventHistoryWrite",
+      "extension": "com.adobe.module.eventhub",
+      "category": "WILD_EVENT"
+    },
+    {
+      "eventName": "getUserAttributes",
+      "eventType": "com.adobe.eventType.userProfile",
+      "eventSource": "com.adobe.eventSource.requestProfile",
+      "extension": "com.adobe.module.userProfile",
+      "category": "API_CALL",
+      "apiName": "getUserAttributes"
+    },
+    {
+      "eventName": "requestgetlastknownlocation",
+      "eventType": "com.adobe.eventType.places",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.places",
+      "category": "API_CALL",
+      "apiName": "getLastKnownLocation"
+    },
+    {
+      "eventName": "requestgetnearbyplaces",
+      "eventType": "com.adobe.eventType.places",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.places",
+      "category": "API_CALL",
+      "apiName": "getNearbyPointsOfInterest"
+    },
+    {
+      "eventName": "requestgetuserwithinplaces",
+      "eventType": "com.adobe.eventType.places",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.places",
+      "category": "API_CALL",
+      "apiName": "getCurrentPointsOfInterest"
+    },
+    {
+      "eventName": "requestprocessregionevent",
+      "eventType": "com.adobe.eventType.places",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.places",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "processGeofence",
+        "processGeofenceEvent"
+      ]
+    },
+    {
+      "eventName": "requestreset",
+      "eventType": "com.adobe.eventType.places",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.places",
+      "category": "API_CALL",
+      "apiName": "clear"
+    },
+    {
+      "eventName": "requestsetauthorizationstatus",
+      "eventType": "com.adobe.eventType.places",
+      "eventSource": "com.adobe.eventSource.requestContent",
+      "extension": "com.adobe.places",
+      "category": "API_CALL",
+      "apiName": "setAuthorizationStatus"
+    },
+    {
+      "eventName": "resetLinkageFields Event",
+      "eventType": "com.adobe.eventType.campaign",
+      "eventSource": "com.adobe.eventSource.requestReset",
+      "extension": "com.adobe.module.campaign",
+      "category": "API_CALL",
+      "apiName": "resetLinkageFields"
+    },
+    {
+      "eventName": "responsegetlastknownlocation",
+      "eventType": "com.adobe.eventType.places",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.places",
+      "category": "API_RESPONSE",
+      "apiName": "getLastKnownLocation"
+    },
+    {
+      "eventName": "responsegetnearbyplaces",
+      "eventType": "com.adobe.eventType.places",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.places",
+      "category": "API_RESPONSE",
+      "apiName": "getNearbyPointsOfInterest"
+    },
+    {
+      "eventName": "responsegetuserwithinplaces",
+      "eventType": "com.adobe.eventType.places",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.places",
+      "category": "API_RESPONSE",
+      "apiName": "getCurrentPointsOfInterest"
+    },
+    {
+      "eventName": "responseprocessregionevent",
+      "eventType": "com.adobe.eventType.places",
+      "eventSource": "com.adobe.eventSource.responseContent",
+      "extension": "com.adobe.places",
+      "category": "WILD_EVENT",
+      "apiNames": [
+        "processGeofence",
+        "processGeofenceEvent"
+      ]
+    },
+    {
+      "eventName": "setLinkageFields Event",
+      "eventType": "com.adobe.eventType.campaign",
+      "eventSource": "com.adobe.eventSource.requestIdentity",
+      "extension": "com.adobe.module.campaign",
+      "category": "API_CALL",
+      "apiName": "setLinkageFields"
+    }
+  ]
+}

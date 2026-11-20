@@ -1,5 +1,6 @@
 package com.adobe.marketing.mobile.telemetry
 
+import com.adobe.marketing.mobile.plugin.TelemetryHubEvent
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -22,7 +23,11 @@ data class TelemetryRecord(
     val outcomeContract: String? = null,
     val coverage: String? = null,
     val captureMode: String? = null,
-    val optimizedContext: String? = null
+    val optimizedContext: String? = null,
+    val hubEvent: TelemetryHubEvent? = null,
+    val apiEventType: String? = null,
+    val mappingStatus: String? = null,
+    val apiCandidates: List<String> = emptyList()
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
         put("recordId", recordId); put("timestamp", timestamp); put("producer", producer)
@@ -39,6 +44,15 @@ data class TelemetryRecord(
         coverage?.let { put("coverage", it) }
         captureMode?.let { put("captureMode", it) }
         optimizedContext?.let { put("optimizedContext", JSONObject(it)) }
+        hubEvent?.let { event ->
+            put("hubEvent", JSONObject().put("name", event.name).put("type", event.type)
+                .put("source", event.source).put("eventId", event.eventId)
+                .put("parentId", event.parentId ?: JSONObject.NULL)
+                .put("responseId", event.responseId ?: JSONObject.NULL).put("timestamp", event.timestamp))
+        }
+        apiEventType?.let { put("apiEventType", it) }
+        mappingStatus?.let { put("mappingStatus", it) }
+        if (apiCandidates.isNotEmpty()) put("apiCandidates", JSONArray(apiCandidates))
     }
 
     /** Omega empty-payload guard equivalent: a record with no identity/meaning is not recordable. */
@@ -69,7 +83,17 @@ data class TelemetryRecord(
             outcomeContract = json.optString("outcomeContract").ifBlank { null },
             coverage = json.optString("coverage").ifBlank { null },
             captureMode = json.optString("captureMode").ifBlank { null },
-            optimizedContext = json.optJSONObject("optimizedContext")?.toString()
+            optimizedContext = json.optJSONObject("optimizedContext")?.toString(),
+            hubEvent = json.optJSONObject("hubEvent")?.let {
+                TelemetryHubEvent(it.getString("name"), it.getString("type"), it.getString("source"),
+                    it.getString("eventId"), it.optString("parentId").takeUnless { id -> id.isBlank() || id == "null" },
+                    it.optString("responseId").takeUnless { id -> id.isBlank() || id == "null" }, it.getLong("timestamp"))
+            },
+            apiEventType = json.optString("apiEventType").ifBlank { null },
+            mappingStatus = json.optString("mappingStatus").ifBlank { null },
+            apiCandidates = json.optJSONArray("apiCandidates")?.let { array ->
+                (0 until array.length()).map { array.getString(it) }
+            } ?: emptyList()
         )
     }
 }

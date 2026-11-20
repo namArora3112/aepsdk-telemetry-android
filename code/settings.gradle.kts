@@ -2,7 +2,10 @@ pluginManagement {
     repositories { google(); mavenCentral(); gradlePluginPortal() }
 }
 dependencyResolutionManagement {
-    repositories { google(); mavenCentral(); maven("https://maven.adobe.com/nexus/content/repositories/public/") }
+    repositories {
+        mavenLocal { content { includeGroup("com.adobe.marketing.mobile") } }
+        google(); mavenCentral(); maven("https://maven.adobe.com/nexus/content/repositories/public/")
+    }
 }
 rootProject.name = "telemetry"
 include(":telemetry", ":testapp")

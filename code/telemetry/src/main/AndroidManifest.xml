@@ -1,1 +1,28 @@
-<manifest />
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Auto-collection performs no network I/O itself, but the post-init Sync path does. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application>
+        <!--
+          Jetpack App Startup entry. Merges into the host app even when this SDK arrives
+          only as a transitive dependency of Core. Host opt-out:
+            * tools:node="remove" on the TelemetryStartupInitializer meta-data below, or
+            * <meta-data android:name="com.adobe.marketing.mobile.telemetry.AUTO_START"
+                         android:value="false" /> on the application element.
+        -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="com.adobe.marketing.mobile.telemetry.TelemetryStartupInitializer"
+                android:value="androidx.startup"
+                tools:node="merge" />
+        </provider>
+    </application>
+</manifest>

@@ -1,18 +1,26 @@
 package com.adobe.marketing.mobile.telemetry
 
+import com.adobe.marketing.mobile.telemetry.internal.UploadControl
+
 import android.app.Application
+import android.content.Context
 import com.adobe.marketing.mobile.telemetry.internal.InMemoryOutbox
 import com.adobe.marketing.mobile.telemetry.internal.SqliteOutbox
+import com.adobe.marketing.mobile.telemetry.internal.Sync
+import com.adobe.marketing.mobile.telemetry.internal.TelemetryCollector
 import com.adobe.marketing.mobile.telemetry.internal.TelemetryRecorder
 import com.adobe.marketing.mobile.telemetry.internal.TelemetryStore
 import com.adobe.marketing.mobile.telemetry.internal.TelemetryUploader
 import com.adobe.marketing.mobile.telemetry.internal.EventApiCatalog
+import com.adobe.marketing.mobile.telemetry.internal.EventNameCatalog
 import com.adobe.marketing.mobile.telemetry.internal.OptimizedSender
+import com.adobe.marketing.mobile.telemetry.internal.TelemetryOperationController
 import com.adobe.marketing.mobile.telemetry.internal.DeliveryResult
 import java.util.UUID
 import com.adobe.marketing.mobile.MobileCore
 import com.adobe.marketing.mobile.plugin.TelemetryEventMapping
 import com.adobe.marketing.mobile.plugin.TelemetryApiRecord
+import com.adobe.marketing.mobile.plugin.TelemetryHubEvent
 import com.adobe.marketing.mobile.telemetrybridge.TelemetryBridge
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -44,6 +52,8 @@ object Telemetry {
     private var coreGeneration = 0L
     private var catalogVersion = 0
     private var catalogStatus = "not loaded"
+    private var nameCatalog: EventNameCatalog? = null
+    private var nameCatalogStatus = "not loaded"
     private var deliveryGeneration = 0L
     private var uploadInFlight = false
     private var retryAtMs = 0L
@@ -52,6 +62,25 @@ object Telemetry {
     private val executor = Executors.newSingleThreadScheduledExecutor { r ->
         Thread(r, "aep-telemetry").apply { isDaemon = true }
     }
+    private val operationController by lazy {
+        TelemetryOperationController(
+            recordOperation = { id, producer, name, phase, outcome, meaning, duration ->
+                recordFromCore(
+                    producer, name, phase, "directHook", operationId = id,
+                    outcome = outcome, meaning = meaning, durationMs = duration,
+                    generation = coreGeneration
+                )
+            },
+            recordApi = { api ->
+                recordFromCore(
+                    api.producer, api.apiName, api.phase, "directApi",
+                    operationId = api.operationId, outcome = api.outcome,
+                    meaning = api.meaning, durationMs = api.durationMs,
+                    generation = coreGeneration, api = api
+                )
+            }
+        )
+    }
 
     @Volatile var installedAtMs: Long = 0L; private set
     @Volatile var installed: Boolean = false; private set
@@ -59,6 +88,7 @@ object Telemetry {
     /** Customer-facing entry point. Attach is memory-only: no network, no disk scan beyond prefs. */
     @JvmStatic
     fun install(application: Application) {
+        UploadControl.configure(application)
         synchronized(lock) {
             if (installed) return                          // install-once; first attach wins
             installed = true
@@ -70,8 +100,15 @@ object Telemetry {
                 catalogVersion = catalog.version
                 catalogStatus = "loaded"
             } catch (_: IllegalArgumentException) {
-                config = config.copy(enabled = false)
+                if (!config.eventNameMapperEnabled) config = config.copy(enabled = false)
                 catalogStatus = "invalid; collection disabled"
+            }
+            try {
+                nameCatalog = EventNameCatalog.load(application)
+                nameCatalogStatus = "loaded"
+            } catch (_: Exception) {
+                nameCatalogStatus = "invalid; mapper collection disabled"
+                if (config.eventNameMapperEnabled) config = config.copy(enabled = false)
             }
             store = TelemetryStore(application, ids)
             val outbox = runCatching { SqliteOutbox(application) }.getOrElse { InMemoryOutbox() }
@@ -102,13 +139,17 @@ object Telemetry {
     /** Start an instrumented operation; returns operationId for correlation. */
     @JvmStatic
     fun operationStarted(producer: String, eventName: String, capture: String = "directHook"): String? {
-        return TelemetryBridge.operationStarted(producer, eventName)
+        if (!installed || !config.enabled) return null
+        return operationController.operationStarted(producer, eventName)
     }
 
     @JvmStatic
     fun operationCompleted(operationId: String?, producer: String, eventName: String,
                            outcome: String, outcomeMeaning: String? = null, capture: String = "directHook") {
-        TelemetryBridge.operationCompleted(operationId, producer, eventName, outcome, outcomeMeaning ?: "")
+        operationId ?: return
+        operationController.operationCompleted(
+            operationId, producer, eventName, outcome, outcomeMeaning ?: ""
+        )
     }
 
     /** Hub projection entry (read-only observation of already-dispatched hub events). */
@@ -117,8 +158,90 @@ object Telemetry {
         recordInternal(producer, eventName, "event", "hubProjection", requestId = requestId)
     }
 
+    /** Opt-in POC: catalog-derived API labels, not authenticated public invocation counts. */
+    @JvmStatic
+    fun eventMapper(event: TelemetryHubEvent, generation: Long) {
+        synchronized(lock) {
+            if (generation != coreGeneration || !config.enabled || !config.eventNameMapperEnabled) return
+            val mapped = nameCatalog?.map(event) ?: return
+            val context = uploader?.captureContext(config) ?: return
+            recorder?.record(TelemetryRecord(
+                ids.newId(), event.timestamp, mapped.extension, mapped.apiName ?: "unmapped",
+                "event", "hubProjection", requestId = event.eventId, recordKind = "catalog_mapped_event",
+                optimizedContext = context, hubEvent = event, apiEventType = mapped.category,
+                mappingStatus = mapped.status, apiCandidates = mapped.candidates
+            ))
+        }
+    }
+
+    @JvmStatic
+    internal fun declareApiCapabilities(
+        producer: String, declarations: List<com.adobe.marketing.mobile.plugin.TelemetryApiCapability>
+    ): Boolean = operationController.declareApiCapabilities(producer, declarations)
+
+    @JvmStatic internal fun apiStarted(producer: String, name: String): String? =
+        operationController.apiStarted(producer, name)
+
+    @JvmStatic internal fun apiCompleted(id: String, producer: String, name: String, outcome: String) =
+        operationController.apiCompleted(id, producer, name, outcome)
+
+    @JvmStatic internal fun setCaptureMode(mode: String): Boolean =
+        operationController.setCaptureMode(mode)
+
+    @JvmStatic internal fun operationStatus(): Map<String, Any> =
+        operationController.migrationStatus()
+
+    @JvmStatic internal fun expireApiOperations() =
+        operationController.expireApiOperations()
+
+    /**
+     * Phase-2 gate for the automatic-collection pipeline. Idempotent; the first config
+     * wins and later calls are safe no-ops. Also starts Phase-1 collection as a fallback
+     * in case the host removed the App Startup provider. Never blocks the main thread:
+     * validation, consent evaluation, remote-config refresh and queue draining all run
+     * on the sync pipeline's background executor.
+     */
+    @JvmStatic
+    fun init(context: Context, settings: SyncSettings) {
+        (context.applicationContext as? Application)?.let { application ->
+            if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+                TelemetryCollector.start(application)
+            } else {
+                android.os.Handler(android.os.Looper.getMainLooper()).post { TelemetryCollector.start(application) }
+            }
+        }
+        Sync.init(context, settings)
+    }
+
+    /** Purge the automatic-event queue and stop collecting/uploading. */
+    @JvmStatic
+    fun optOut() {
+        Sync.optOut()
+    }
+
+    /** Consent changes re-evaluate the gate: OPTED_OUT purges, UNKNOWN buffers, OPTED_IN drains. */
+    @JvmStatic
+    fun notifyConsentChanged(status: ConsentStatus) {
+        Sync.onConsentChanged(status)
+    }
+
     @JvmStatic
     fun flush() { maybeFlush(force = true) }
+
+    /** POC upload switch: collection continues and pending rows are retained while paused. */
+    @JvmStatic
+    fun setUploadsEnabled(enabled: Boolean) {
+        synchronized(lock) {
+            if (!UploadControl.setEnabled(enabled)) return
+            deliveryGeneration++
+            retryAtMs = 0
+            retryAttempt = 0
+        }
+        if (enabled) {
+            Sync.onUploadsEnabled()
+            maybeFlush(force = true)
+        }
+    }
 
     /**
      * Public API for consuming extensions (e.g. ACC direct-hook usage): force-seal and upload
@@ -166,15 +289,19 @@ object Telemetry {
     fun stats(): Map<String, Any?> = mapOf(
         "installed" to installed,
         "enabled" to config.enabled,
+        "uploadsEnabled" to UploadControl.enabled,
         "captureGeneration" to coreGeneration,
         "catalogVersion" to catalogVersion,
         "catalogStatus" to catalogStatus,
+        "eventNameMapperEnabled" to config.eventNameMapperEnabled,
+        "eventNameCatalogStatus" to nameCatalogStatus,
+        "eventNameCatalogVersion" to nameCatalog?.version,
         "optimizedPayload" to config.optimizedPayload,
         "uploadInFlight" to uploadInFlight,
         "rejectedRecords" to rejectedRecords,
         "endpoint" to config.endpoint.ifBlank { "(capture-only)" },
         "lastUpload" to (uploader?.lastUploadStatus ?: "never")
-    ) + (recorder?.stats() ?: emptyMap()) + TelemetryBridge.migrationStatus()
+    ) + (recorder?.stats() ?: emptyMap()) + operationController.migrationStatus()
 
     /** Policy change entry point (remote kill switch lands here). Deny -> purge. */
     @JvmStatic
@@ -182,8 +309,10 @@ object Telemetry {
         synchronized(lock) {
             val wasEnabled = config.enabled
             val destinationChanged = config.endpoint != newConfig.endpoint || config.orgId != newConfig.orgId ||
-                config.optimizedPayload != newConfig.optimizedPayload
-            config = if (catalogStatus.startsWith("invalid")) newConfig.copy(enabled = false) else newConfig
+                config.optimizedPayload != newConfig.optimizedPayload ||
+                config.eventNameMapperEnabled != newConfig.eventNameMapperEnabled
+            val invalidCatalog = if (newConfig.eventNameMapperEnabled) nameCatalog == null else catalogStatus.startsWith("invalid")
+            config = if (invalidCatalog) newConfig.copy(enabled = false) else newConfig
             if (wasEnabled != config.enabled || destinationChanged) {
                 deliveryGeneration++
                 retryAtMs = 0
@@ -205,11 +334,13 @@ object Telemetry {
 
     private fun publishPolicy(catalog: List<TelemetryEventMapping> = mappings) {
         try {
-            coreGeneration = TelemetryBridge.configure(plugin, installed && config.enabled, catalog)
+            coreGeneration = TelemetryBridge.configureEventMapper(
+                plugin, installed && config.enabled
+            )
         } catch (e: IllegalArgumentException) {
             config = config.copy(enabled = false)
             recorder?.purge()
-            coreGeneration = TelemetryBridge.configure(plugin, false, emptyList())
+            coreGeneration = TelemetryBridge.configureEventMapper(plugin, false)
             throw e
         }
     }
@@ -222,6 +353,7 @@ object Telemetry {
         synchronized(lock) {
             val r = recorder ?: return
             if (!config.enabled) return
+            if (config.eventNameMapperEnabled) return
             if (!config.captureDirectHooks && capture != "hubProjection") return
             val context = if (config.optimizedPayload) runCatching { uploader?.captureContext(config) }.getOrNull() ?: return else null
             r.record(TelemetryRecord(ids.newId(), timestamp ?: clock.nowMs(), producer, eventName, phase, capture,
@@ -249,18 +381,20 @@ object Telemetry {
     }
 
     private fun maybeFlush(force: Boolean = false) {
-        TelemetryBridge.expireApiOperations()
+        operationController.expireApiOperations()
         synchronized(lock) {
             val r = recorder ?: return
             val u = uploader ?: return
-            if (!config.enabled || config.endpoint.isBlank() || uploadInFlight || clock.nowMs() < retryAtMs) return
+            if (!UploadControl.enabled ||
+                !config.enabled || config.endpoint.isBlank() || uploadInFlight || clock.nowMs() < retryAtMs) return
             if (!force && !r.shouldFlush()) return
             val records = r.peekBatch(config.maxBatchBytes)
             if (records.isEmpty()) return
             uploadInFlight = true
             val generation = deliveryGeneration
             val snapshot = config
-            fun permitted() = generation == deliveryGeneration && config.enabled
+            fun permitted() = generation == deliveryGeneration && config.enabled &&
+                UploadControl.enabled
             fun finished(result: DeliveryResult) {
                 synchronized(lock) {
                     uploadInFlight = false

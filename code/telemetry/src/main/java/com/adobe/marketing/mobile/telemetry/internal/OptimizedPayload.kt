@@ -33,6 +33,7 @@ internal object OptimizedPayload {
     fun usage(record: TelemetryRecord): JSONObject {
         require(constantName.matches(record.producer) && constantName.matches(record.eventName))
         val context = JSONObject(requireNotNull(record.optimizedContext))
+        if (record.recordKind == "catalog_mapped_event") return mappedUsage(record, context)
         val apiEventType = when {
             record.recordKind == "api_invocation" -> "API_CALL"
             record.recordKind == "api_outcome" && record.outcome in setOf("failure", "rejected", "timed_out") -> "API_FAIL"
@@ -51,6 +52,23 @@ internal object OptimizedPayload {
             .put("orgId", context.getString("orgId"))
             .put("telemetry", JSONObject().put("events", JSONArray().put(event)))
         return envelope("sdk.usage", record.recordId, record.timestamp, tenant)
+    }
+
+    private fun mappedUsage(record: TelemetryRecord, context: JSONObject): JSONObject {
+        val hub = requireNotNull(record.hubEvent)
+        require(record.apiEventType in setOf("API_CALL", "API_RESPONSE", "WILD_EVENT"))
+        require(record.timestamp == hub.timestamp && record.requestId == hub.eventId)
+        val event = JSONObject().put("apiEventType", record.apiEventType).put("timestamp", hub.timestamp)
+            .put("extension", record.producer).put("eventName", hub.name).put("eventType", hub.type)
+            .put("eventSource", hub.source).put("eventId", hub.eventId)
+            .put("parentId", hub.parentId ?: JSONObject.NULL).put("responseId", hub.responseId ?: JSONObject.NULL)
+            .put("classificationOrigin", "eventHubCatalog").put("mappingStatus", record.mappingStatus)
+        if (record.mappingStatus != "unknown_name" && record.mappingStatus != "ambiguous_name") {
+            event.put("apiName", record.eventName)
+        }
+        if (record.apiCandidates.isNotEmpty()) event.put("apiCandidates", JSONArray(record.apiCandidates))
+        context.put("telemetry", JSONObject().put("events", JSONArray().put(event)))
+        return envelope("sdk.usage", record.recordId, hub.timestamp, context)
     }
 
     private fun envelope(type: String, id: String, time: Long, tenant: JSONObject): JSONObject {

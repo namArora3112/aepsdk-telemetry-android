@@ -1,0 +1,28 @@
+{
+  "mappingDocument": "TELEMETRY_EXTENSION_EVENT_MAPPING.md",
+  "mappingSha256": "61c2705fbf000d79d5c4ba2f8a0603cf1595830c084e7f2f76c0af0747c9c9bb",
+  "rules": 193,
+  "categories": {
+    "WILD_EVENT": 98,
+    "API_CALL": 72,
+    "API_RESPONSE": 23
+  },
+  "dynamicSignaturesExcluded": [
+    [
+      "<caller Event.name>",
+      "<caller Event.type>",
+      "<caller Event.source>"
+    ],
+    [
+      "AEP Response Event Handle",
+      "com.adobe.eventType.edge",
+      "<server-handle-type; fallback com.adobe.eventSource.responseContent>"
+    ],
+    [
+      "Forward operational data",
+      "<configured-consequence-eventType>",
+      "<configured-consequence-eventSource>"
+    ]
+  ],
+  "policy": "Exact name; normalized type/source guards. Reviewed operation associations are observational, not proof of public caller origin or success. Internal child/notification signatures never become API calls merely because their source is requestContent. No eventData or ID inference."
+}

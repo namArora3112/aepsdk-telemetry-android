@@ -16,9 +16,11 @@ data class TelemetryConfig(
     val flushIntervalMs: Long = 60_000,
     val optimizedPayload: Boolean = false,
     val orgId: String = "",
-    val captureDirectHooks: Boolean = true
+    val captureDirectHooks: Boolean = true,
+    val eventNameMapperEnabled: Boolean = false
 ) {
     init {
+        require(!eventNameMapperEnabled || optimizedPayload)
         if (optimizedPayload) {
             require(maxQueueSize in 1..1024 && maxBatchBytes in 1024..262144)
             require(dedupeWindowMs in 0..3_600_000 && flushIntervalMs in 1000..3_600_000)
@@ -33,6 +35,17 @@ data class TelemetryConfig(
     }
 
     companion object {
+        const val DEFAULT_OPTIMIZED_ORG_ID = "745F37C35E4B776E0A49421B@AdobeOrg"
+        const val DEFAULT_OPTIMIZED_ENDPOINT = "https://edge-int.adobedc.net/ee/v1/interact?configId=6308f4cc-1c6b-4700-aaa8-d5622404f6c3"
+
+        /** Stage routing belongs to the optimized format, not the legacy collector payload. */
+        @JvmStatic
+        fun optimizedDefaults(): TelemetryConfig = TelemetryConfig(
+            optimizedPayload = true,
+            endpoint = DEFAULT_OPTIMIZED_ENDPOINT,
+            orgId = DEFAULT_OPTIMIZED_ORG_ID
+        )
+
         fun fromAssets(context: Context): TelemetryConfig {
             return try {
                 val text = context.assets.open("telemetry-config.json").bufferedReader().use { it.readText() }
@@ -42,16 +55,21 @@ data class TelemetryConfig(
             }
         }
 
-        fun fromJson(json: JSONObject): TelemetryConfig = TelemetryConfig(
-            enabled = json.optBoolean("enabled", false),
-            endpoint = json.optString("endpoint", ""),
-            maxQueueSize = json.optInt("maxQueueSize", 256),
-            maxBatchBytes = json.optInt("maxBatchBytes", 32 * 1024),
-            dedupeWindowMs = json.optLong("dedupeWindowMs", 5000),
-            flushIntervalMs = json.optLong("flushIntervalMs", 60_000),
-            optimizedPayload = json.optBoolean("optimizedPayload", false),
-            orgId = json.optString("orgId", ""),
-            captureDirectHooks = json.optBoolean("captureDirectHooks", true)
-        )
+        fun fromJson(json: JSONObject): TelemetryConfig {
+            val optimized = json.optBoolean("optimizedPayload", false)
+            val defaults = if (optimized) optimizedDefaults() else TelemetryConfig()
+            return TelemetryConfig(
+                enabled = json.optBoolean("enabled", false),
+                endpoint = json.optString("endpoint", defaults.endpoint),
+                maxQueueSize = json.optInt("maxQueueSize", 256),
+                maxBatchBytes = json.optInt("maxBatchBytes", 32 * 1024),
+                dedupeWindowMs = json.optLong("dedupeWindowMs", 5000),
+                flushIntervalMs = json.optLong("flushIntervalMs", 60_000),
+                optimizedPayload = optimized,
+                orgId = json.optString("orgId", defaults.orgId),
+                captureDirectHooks = json.optBoolean("captureDirectHooks", true),
+                eventNameMapperEnabled = json.optBoolean("eventNameMapperEnabled", false)
+            )
+        }
     }
 }
